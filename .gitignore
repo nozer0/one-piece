@@ -1,0 +1,5 @@
+.gitignore
+.git/*
+.bundle/
+.DS_Store
+~*
