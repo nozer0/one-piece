@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>define wrapper test</title>
+	<meta charset="utf-8">
+	<meta content="nozer0" name="author">
+	<meta http-equiv="cache-control" content="no-cache">
+	<link rel="stylesheet" type="text/css" href="../../src/util/console.css">
+</head>
+<body>
+	<div id="console"></div>
+	<script src="../../src/base/define.js"></script>
+	<script src="../../src/util/console.js"></script>
+	<script src="../js/math.js"></script>
+	<script src="../js/increment.js"></script>
+	<script src="../js/program.js"></script>
+	<script defer>
+		var ms = define.modules, p, m, console = require('util/console').constructor();
+		console.info(define.getCurrentScriptSrc());
+		for (p in ms) {
+			if (ms.hasOwnProperty(p)) {
+				m = ms[p];
+				console.info('id: ' + m.id + ', uri: ' + m.uri);
+			}
+		}
+		console.info('increment(1) = ', require('../js/increment').increment(1));
+	</script>
+</body>
+</html>

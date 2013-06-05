@@ -1,0 +1,30 @@
+body { margin: 0; padding: 0; }
+
+#console { background: #078; color: #f0c674; padding: 10px; }
+#console * { color: #f0c674; }
+
+#console fieldset { padding: 0 10px; margin: 10px 2px; }
+
+#console p { font: 15px sans-serif; display: none; margin: 15px 0; }
+
+#console [name="log"]:checked~.log { display: block; }
+
+#console [name="log"]:checked~* .log { display: block; }
+
+#console .info { color: #f6f6ae; }
+
+#console [name="info"]:checked~.info { display: block; }
+
+#console [name="info"]:checked~* .info { display: block; }
+
+#console .warn { color: #f3d118; }
+
+#console [name="warn"]:checked~.warn { display: block; }
+
+#console [name="warn"]:checked~* .warn { display: block; }
+
+#console .error { color: #f40; }
+
+#console [name="error"]:checked~.error { display: block; }
+
+#console [name="error"]:checked~* .error { display: block; }

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>require test</title>
+	<meta charset='utf-8'>
+	<meta content='nozer0' name='author'>
+	<meta http-equiv='cache-control' content='no-cache'>
+	<link rel='stylesheet' type='text/css' href='../src/util/console.css'>
+</head>
+<body>
+	<script src='../src/require.js'></script>
+	<!--<script src='../src/require-shim.js'></script>-->
+	<script defer>
+		define.config({
+			debug : 1,
+			base  : 'http://localhost/one-piece/test/js/',
+			alias : {'underscore' : 'https://raw.github.com/documentcloud/underscore/master/underscore.js'},
+			shims : {'https://raw.github.com/documentcloud/underscore/master/underscore' : '_'}
+		});
+		define(function (require, exports, module) {
+			'use strict';
+			require('./js/program');
+			require('./css/test.css');
+			require('./js/main.js');
+			var console = require('util/console'), inc = require('./js/increment').increment, a = 1;
+//			console.log(require('underscore').size({a : 1, b : 2, c : 3}));
+			console.log(inc(a)); // 2
+		});
+
+		var $_ = {define : define};
+		//window.define = undefined;
+		//window.require = undefined;
+		$_.define('module-0', [], function (require, exports, module) {
+			module.exports = {value : '0'};
+		});
+		$_.define('module-1', ['module-0'], function (require, exports, module) {
+			module.exports = require('module-0');
+		});
+		$_.define('module-2', ['module-1'], function (require, exports, module) {
+			module.exports = require('module-1');
+		});
+		$_.define('module-3', ['module-2'], function (require, exports, module) {
+			module.exports = require('module-2');
+		});
+		$_.define('module-4', ['module-3'], function (require, exports, module) {
+			module.exports = require('module-3');
+		});
+		$_.define('module-5', ['module-4'], function (require, exports, module) {
+			module.exports = require('module-4');
+		});
+		$_.define('module-6', ['module-5'], function (require, exports, module) {
+			module.exports = require('module-5');
+		});
+		$_.define('module-7', ['module-6'], function (require, exports, module) {
+			module.exports = require('module-6');
+		});
+		$_.define('module-8', ['module-7'], function (require, exports, module) {
+			module.exports = require('module-7');
+		});
+		$_.define('module-9', ['module-8'], function (require, exports, module) {
+			module.exports = require('module-8');
+		});
+		$_.define('module-10', ['module-9'], function (require, exports, module) {
+			module.exports = require('module-9');
+		});
+		$_.define('module-11', ['module-10'], function (require) {
+			var mod = require('module-10');
+			if (mod.value !== '0') { throw 'WRONG'; }
+			console.info('hi', mod.value);
+			delete define.current_uri;
+		});
+	</script>
+</body>
+</html>

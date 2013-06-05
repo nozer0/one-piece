@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>parser test</title>
+	<meta charset="utf-8">
+	<meta content="nozer0" name="author">
+	<meta http-equiv="cache-control" content="no-cache">
+	<link rel="stylesheet" type="text/css" href="../../src/util/console.css">
+	<style>
+		textarea { width: 400px; height: 500px; }
+	</style>
+</head>
+<body>
+<textarea id="code">
+define(function(require, exports, module) {
+	// string test
+	var s1 = '"'/* " */, s2 = "'"
+	var complex = { x: function() { var a; }, var : 2, if : function() {}, m1 : require('module 1'), m2 : $require("x")} //,
+	/* var */
+	, a = 1 ? 3 / 2 : 1, g = 1 < 2, $function, $if,
+	b, fn = /* fn */function /* */ttt/* */()/* */ {}
+	var s = 'xx\'; require("in string") //', bs = '\\';   // require("in comment")
+
+	var s = '// i am string'; require('module 2');
+	var t = 'i am string too'; // require('z');
+	exports.s = 'xx // xx' + require('module 3');
+	var s = 'I am a str~~~ \
+	// ~ing\ require("in string") \
+	'
+
+	// regexp test
+	var r = / \/\/ \/b\//g;
+	var r2 = /[//]no 'comment[*/]/
+	var r3 = / // require('module 4')/ /b\//g;
+	var r4 = / ///*require("in comment").*/ /b\//g;
+	var r5 = / //*.*// /b\//g;
+	if /* if */(a)
+	/ require("in regexp") /
+	3
+	$if /* $if */(a)
+	/ require('module 5') /
+	3
+	fn /* fn */(a)
+	/ require('module 6') /
+	3
+	o.
+	if /* $if */(a)
+	/ require('module 7') /
+	3
+
+	// divisor test
+	3
+	/ require('module 8') /g
+
+	var i,s
+	s="here is a string"
+	i=0
+	/[a-require('module 9')]/g.exec(require('module 10')
+
+	$var
+	a;
+	var c,i,l,quitchars
+	quitchars=['q','Q']
+	charloop:while(c=getc()){
+	for (i=0; i
+	<quitchars.length
+	; i++){
+	if (c==quitchars[i]) break charloop
+	}
+	/* ... more code to handle other characters here ... */
+	}
+
+	// function test
+	var define = function(a,
+	b)
+	{
+	// some comment
+	var reg = /.*/g; // comment */
+	return /require("in regexp")/g
+	}
+
+	var define2 = $function(a,
+	b)
+	{
+	// some comment
+	var reg = /.*/g; // comment */
+	$return /require('module 11')/g
+	}
+
+	function fn() {}
+	fn(function fn2() {})
+	fn2()
+	ttt();
+
+	// comment test
+	/* will not // be removed */ var xx = 'a';
+	var str = " /* not a real comment */ ";
+	var regex = /\/*.*/;
+	var tt = '"\'';
+
+	// require test
+	$(element).
+	width().
+	height().
+	require("in method")
+
+	var x =/ x /* 2
+	require('module 12')
+	/*
+	^_^
+	*/
+
+	var x =2/ x /* 2
+	require("in comment")
+	/*
+	^_^
+	*/
+
+	if(a+(b/c))/ x /* 2
+	require('module 13')
+	/*
+	^_^
+	*/
+
+	(a+(b/c))/ x /* 2
+	require("in comment")
+	/*
+	^_^
+	*/
+
+	});
+</textarea>
+<textarea id="code2"></textarea>
+<script src="../../src/base/define.js"></script>
+<script src="../../src/util/console.js"></script>
+<script src="../../src/util/assert.js"></script>
+<script src="../../src/util/test.js"></script>
+<script src="../../src/base/parser.js"></script>
+<script defer>
+	define(function (require) {
+		var assert = require('util/assert'), parser = require('base/parser'), code = document.getElementById('code'), code2 = document.getElementById('code2');
+		//log.level = 9;
+		require('util/test').run({
+			test : function () {
+				var ret = parser.precompile(code.value), deps = [], rets = {}, strs = ret.strings;
+				code2.value = ret.s;
+				ret.s.replace(/([\w$]|\.\s*)?require\s*\(.*?(\d+)\s*\)/g, function (m, w$, n) {
+					var s;
+					if (!w$) {
+						s = strs[n - 1].replace(/^['"]\s*|\s*['"]$/g, '');
+						if (!rets.hasOwnProperty(s)) {
+							rets[s] = true;
+							deps.push(s);
+						}
+					}
+					return '';
+				});
+				assert.deepEqual(deps, ["module 1","module 2","module 3","module 4","module 5","module 6","module 7","module 8","module 9","module 10","module 11","module 12","module 13"]);
+			}
+		});
+	});
+</script>
+</body>
+</html>
