@@ -1,21 +1,27 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-04 10:31
+ * Modified : 2013-06-11 17:41
  * Name     : util/uri.js
  */
 
+/*global define */
 define(function (require, exports) {
 	'use strict';
+
 	var base = '', maps = [], loc_re = /^(?:(\w+:)\/\/)?(([^:\/]+):?([\d]+)?)([^?#]+?([^\/?#]+?)?(\.\w*)?)(\?[^#]+)?(#\S*)?$/, protocol_re = /^\w+:\/\/\w/, root_re = /\w+:\/\/[^\/#?]+/, base_re = /[^\/]*$/, slash_re = /\/{2,}/g, relative_re = /\/\.(?=\/)/g, parent_re = /[^\/]+\/\.\.\//, location = (this || window).location, normalize;
 	exports.location = function (uri) {
 		var t = loc_re.exec(uri);
-		return t ? {uri : t[1] ? uri : 'http://' + uri, protocol : t[1] || 'http:', host : t[2], hostname : t[3], port : t[4] || '', pathname : t[5] || '', basename : t[6] || '', ext : t[7] || '', search : t[8] || '', hash : t[9] || ''} : {uri : uri};
+		return t ? { uri : t[1] ? uri : 'http://' + uri, protocol : t[1] || 'http:', host : t[2], hostname : t[3], port : t[4] || '', pathname : t[5] || '', basename : t[6] || '', ext : t[7] || '', search : t[8] || '', hash : t[9] || '' } : { uri : uri };
 	};
 	exports.isSameHost = function (uri, host) {
 		var t = root_re.exec(uri);
 		return t && t[0] === (host || (location && (location.protocol + '//' + location.host)));
 	};
+	/**
+	 * Format the uri including '///', './' or '../' pattern to normal uri.
+	 * @param {String}  uri the uri string to be normalized
+	 */
 	exports.normalize = normalize = function (uri) {
 		var s = uri.replace(slash_re, '/').replace(':/', '://').replace(relative_re, '');
 		while (parent_re.test(s)) {
@@ -23,6 +29,12 @@ define(function (require, exports) {
 		}
 		return s;
 	};
+	/**
+	 * Format the uri based on the passed base string, and apply the changes from passed maps.
+	 * @param {String}  uri
+	 * @param {String}  ubase   base string
+	 * @param {String}  umaps   maps object, like ['en-us', 'zh-cn'] to replace all 'en-us' strings to 'zh-cn'
+	 */
 	exports.resolve = function (uri, ubase, umaps) {
 		var s = uri, i, l, t;
 		if (typeof ubase === 'Object') {

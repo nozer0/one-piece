@@ -5,6 +5,7 @@
  * Name     : base/parser.js
  */
 
+/*global require,define */
 /**
  * based on ecma-262 edition 5.1
  *
@@ -28,6 +29,7 @@
 
 define(function (require, exports) {
 	'use strict';
+
 	// string|comment|(|) + uncertain slash|)|regexp
 	var re = /(".*?"|'.*?')|(\/\*[\s\S]*?\*\/|\/\/.*)|[\w$\]]\s*\/(?![*\/])|(?:[^$]return\s*)?(\/)[\s\S]*/g, re2 = /((\$|\.\s*)?\b(?:if|for|while)\b\s*)?(\()|(([\w$)\]])\s*)(\/([^\/*][\s\S]*$))|(\))|([^$]return\s*)?(\/(?:[^*\/\[\r\n]|\[.*?\])(?:[^\/\[\r\n]|\[.*?\])*\/[img]{0,3})((\/)?[\s\S]*)/g,
 		precompile = exports.precompile = function (code) {

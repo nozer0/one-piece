@@ -9,7 +9,8 @@
 
 (function (ctx) {
 	'use strict';
-	var root = ctx || window, _define = root.define, doc = root.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, uri_re = /\/[^\/]+\/(.*?)(?:\.\w+)?(?:[?#].*)?$/, define, current_path, modules, normalize, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
+
+	var root = ctx || window, _define = root.define, doc = root.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, uri_re = /\/[^\/]+\/(.*?)(?:\.\w+)?(?:[?#].*)?$/, define, modules, normalize, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
 		try {
 			this.__();
 		} catch (e) {
@@ -65,23 +66,23 @@
 				return s;
 			};
 			root.require = function (id) {
-				var m = modules[id] || modules[normalize((current_path || (uri_re.exec(getCurrentScriptSrc()) || [0, ''])[1]).replace(/[^\/]*$/, id))];
+				var m = modules[id] || modules[normalize((define.current_path || (uri_re.exec(getCurrentScriptSrc()) || [0, ''])[1]).replace(/[^\/]*$/, id))];
 				if (m) { return m.exports; }
 				throw id + ' is not defined';
 			};
 			define = root.define = function (id, factory) {    // Global
 				var uri = getCurrentScriptSrc(), re = /[^\/]*$/, t = uri_re.exec(uri), path = define.base ? t[1].replace(new RegExp(define.base + '\\/'), '') : t[1], m;
-				if (typeof id !== 'string') {
-					factory = id;
-				} else {
+				if (typeof id === 'string') {
 					path = path.replace(re, id);
+				} else {
+					factory = id;
 				}
-				m = modules[path] = {id : re.exec(path)[0], path : path, uri : uri, exports : {}};
+				m = modules[path] = {id: re.exec(path)[0], path: path, uri: uri, exports: {}};
 				if (typeof factory === 'function') {
 					m.factory = factory;
-					current_path = path;
+					define.current_path = path;
 					factory.call(define.context, root.require, m.exports, m);
-					current_path = null;
+					define.current_path = null;
 				} else {
 					m = m.exports;
 					for (t in factory) {

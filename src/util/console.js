@@ -1,14 +1,16 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-05 14:15
+ * Modified : 2013-06-11 17:39
  * Name     : util/console.js
  */
 
+/*global define */
 define(function (require, exports, module) {
 	'use strict';
+
 	var root = this || window, console = root.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
-		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\r|\\n|\\r\\n/g, '<br>');
 	};
 	exports = module.exports = {
 		LOG         : 1,
@@ -54,7 +56,11 @@ define(function (require, exports, module) {
 		group       : function (title) {
 			var el;
 			title = title || '';
-			console.group ? console.group(title) : console.log(title);
+			if (console.group) {
+				console.group(title);
+			} else {
+				console.log(title);
+			}
 			if (exports.output) {
 				el = root.document.createElement('fieldset');
 				el.innerHTML = '<legend>' + escape(title) + '</legend>';
@@ -63,7 +69,11 @@ define(function (require, exports, module) {
 			}
 		},
 		groupEnd    : function () {
-			console.groupEnd ? console.groupEnd() : console.log('');
+			if (console.groupEnd) {
+				console.groupEnd();
+			} else {
+				console.log('');
+			}
 			if (exports.output) {
 				exports.output = this.output.parentNode;
 			}

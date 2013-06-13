@@ -5,9 +5,11 @@
  * Name     : base/load.js
  */
 
+/*global define */
 define(function (require, exports) {
 	'use strict';
-	var root = this || window, doc = root.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
+
+	var root = window, doc = root.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
 		var ext = re.exec(uri);
 		return (ext && exts[ext[1]]) || 'js';
 	};
@@ -48,7 +50,7 @@ define(function (require, exports) {
 				} : function (node, uri, callback, ctx) {    // opera12-
 					// although it supports both 'onload' and 'onreadystatechange',
 					// but it won't trigger anything if 404, empty or invalid file, use timer instead
-					var body = !exports.preserve && doc.body, timer = ctx.setTimeout(function () {
+					var body = !exports.preserve && doc.body, timer = root.setTimeout(function () {
 						node.onload = null;
 						if (callback) {
 							callback.call(ctx, uri, false, node);
@@ -60,7 +62,7 @@ define(function (require, exports) {
 					}, exports.timeout);
 					node.onload = function (e) {
 						this.onload = null;
-						ctx.clearTimeout(timer);
+						root.clearTimeout(timer);
 						node = timer = null;
 						if (callback) {
 							callback.call(ctx, uri, true, this, e);
@@ -75,9 +77,9 @@ define(function (require, exports) {
 				node.type = 'text/javascript';
 				node.async = true; // https://developer.mozilla.org/en-US/docs/HTML/Element/script
 				node.charset = exports.charset;
-//				if (defer) {    // support by all browsers except Opera
-//					s.defer = true;
-//				}
+				//				if (defer) {    // support by all browsers except Opera
+				//					s.defer = true;
+				//				}
 				if (callback || !exports.preserve) { load(node, uri, callback, ctx); }
 				node.src = uri;
 				doc.body.appendChild(node);
@@ -95,15 +97,16 @@ define(function (require, exports) {
 					this.onload/* = this.onabort*/ = null;
 					try {
 						t = this.styleSheet.rules.length;
-					} catch (ex) {}
-					callback.call(ctx, uri, t, this, e || ctx.event);
+					} finally {
+						callback.call(ctx, uri, t, this, e || ctx.event);
+					}
 				};
 				node = null;
 			} : function (node, uri, callback, ctx) {
 				// ignore very old ff & webkit which don't trigger anything for all situations
 				var t = !ff && isSameHost(uri), timer;
 				if (node.onerror === undefined || ctx.opera) {   // opera won't trigger anything if 404
-					timer = ctx.setTimeout(function () {
+					timer = root.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
 						node = null;
@@ -112,7 +115,7 @@ define(function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						ctx.clearTimeout(timer);
+						root.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
@@ -136,7 +139,7 @@ define(function (require, exports) {
 			if (callback) {
 				// opera12- supports 'onerror', but won't trigger if 404 from different host
 				if (ctx.opera && !isSameHost(uri)) {
-					timer = ctx.setTimeout(function () {
+					timer = root.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, false, node);
 						node = null;
@@ -145,7 +148,7 @@ define(function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						ctx.clearTimeout(timer);
+						root.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;

@@ -1,4 +1,7 @@
+/*global define */
 define(function (require) {
+	'use strict';
+
 	var assert = require('util/assert'), uri = require('util/uri'), cbase = 'http://localhost/o_p/tests/util/uri.html';
 	require('util/test').run({
 		name          : 'uri',

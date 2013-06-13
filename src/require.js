@@ -5,8 +5,10 @@
  * Name     : require.js
  */
 
+/*global require,define */
 (function (ctx) {
 	'use strict';
+
 	var root = ctx || window, doc = root.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
 		try {
 			this.__();
@@ -59,23 +61,25 @@
 	 *
 	 * If module definiens knows clearly about the dependencies(usually he does), skip the automatic dependency parsing for performance.
 	 *
-	 * @param id  the path relative to related base, the whole path of 'xxx/yyy' should be <base> + 'xxx/yyy'
+	 * @param {String}  id              the path relative to related base, the whole path of 'xxx/yyy' should be <base> + 'xxx/yyy'
+	 * @param {Array}   dependencies    the dependencies array, it's only used in combine file
+	 * @param {Mixed}   definition      the definition function or object
 	 */
 	define = root.define = function (id, dependencies, definition) {
 		var modules = define.modules, m;
-//		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
-//			definition = id;
-//			dependencies = define.parse(definition.toString());
-//			id = null;
-//		} else if (!(dependencies instanceof Array)) {
-//			definition = dependencies;
-//			if (id instanceof Array) {  // define(deps, def)
-//				dependencies = id;
-//				id = null;
-//			} else {    // define(id, def)
-//				dependencies = define.parse(definition.toString());
-//			}
-//		}   // define(id, deps, def)
+		//		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
+		//			definition = id;
+		//			dependencies = define.parse(definition.toString());
+		//			id = null;
+		//		} else if (!(dependencies instanceof Array)) {
+		//			definition = dependencies;
+		//			if (id instanceof Array) {  // define(deps, def)
+		//				dependencies = id;
+		//				id = null;
+		//			} else {    // define(id, def)
+		//				dependencies = define.parse(definition.toString());
+		//			}
+		//		}   // define(id, deps, def)
 		if (typeof id === 'string') {
 			m = modules.hasOwnProperty(id) ? modules[id] : modules[id] = {id : id, path : define.base + id, exports : {}, status : 0};
 			m.dependencies = dependencies;
@@ -93,7 +97,7 @@
 	};
 
 	/**
-	 * @param id  both relative and absolute uris like './xxx', '../xxx', '/xxx/yyy' and even 'http://outof.domain.com/xxx/yyy' are as same as normal uri, for global uris like 'xxx/yyy', which is based on the 'base' option
+	 * @param {String} id   both relative and absolute uris like './xxx', '../xxx', '/xxx/yyy' and even 'http://outof.domain.com/xxx/yyy' are as same as normal uri, for global uris like 'xxx/yyy', which is based on the 'base' option
 	 */
 	require = root.require = define.require = function (id) {
 		var m = define.getModule(id, require.main), main;
@@ -116,13 +120,13 @@
 	define.COMPLETE = 4;
 	define.FAILED = -1;
 	define.modules = {};
-	define.base = /(?:\w+:\/\/)?.*?\//.exec(getCurrentScriptSrc())[0];
+	define.base = /.*?(?=[^\/]*$)/.exec(getCurrentScriptSrc())[0];
 	define.alias = {};
 	define.context = root;
 	uri_re = new RegExp('((?:' + define.base + ')?(.*?))(?:\\.js)?(?:[?#].*)?$');
 
 	define.config = function (cfg) {
-		var p;
+		var p, getModule, ms, i, plugins, l;
 		if (cfg) {
 			for (p in cfg) {
 				if (cfg.hasOwnProperty(p)) {
@@ -133,6 +137,11 @@
 				uri_re = new RegExp('((?:' + cfg.base + ')?(.*?))(?:\\.js)?(?:[?#].*)?$');
 			}
 			define.loader.preserve = define.debug;
+//			if (cfg.plugins) {
+//				for (getModule = define.getModule, ms = define.premodules = [], i = 0, plugins = cfg.plugins, l = plugins.length; i < l; i += 1) {
+//					ms.push(getModule(plugins[i]).id);
+//				}
+//			}
 		}
 		return this;
 	};
@@ -185,7 +194,7 @@
 				m.ancestors = [];
 				loads.push(m);
 			}
-			if (m.status > 2 || m.status === 2 && cyclic(define.modules, m.dependencies, [id])) {   // INTERACTIVE, COMPLETE or cyclic dependencies
+			if (m.status > 2 || (m.status === 2 && cyclic(define.modules, m.dependencies, [id]))) {   // INTERACTIVE, COMPLETE or cyclic dependencies
 				dependencies[m.id] = true;
 			} else {
 				m.ancestors.push(id);
@@ -276,15 +285,20 @@
  */
 define('util/uri', [], function (require, exports) {
 	'use strict';
+
 	var base = '', maps = [], loc_re = /^(?:(\w+:)\/\/)?(([^:\/]+):?([\d]+)?)([^?#]+?([^\/?#]+?)?(\.\w*)?)(\?[^#]+)?(#\S*)?$/, protocol_re = /^\w+:\/\/\w/, root_re = /\w+:\/\/[^\/#?]+/, base_re = /[^\/]*$/, slash_re = /\/{2,}/g, relative_re = /\/\.(?=\/)/g, parent_re = /[^\/]+\/\.\.\//, location = (this || window).location, normalize;
 	exports.location = function (uri) {
 		var t = loc_re.exec(uri);
-		return t ? {uri : t[1] ? uri : 'http://' + uri, protocol : t[1] || 'http:', host : t[2], hostname : t[3], port : t[4] || '', pathname : t[5] || '', basename : t[6] || '', ext : t[7] || '', search : t[8] || '', hash : t[9] || ''} : {uri : uri};
+		return t ? { uri : t[1] ? uri : 'http://' + uri, protocol : t[1] || 'http:', host : t[2], hostname : t[3], port : t[4] || '', pathname : t[5] || '', basename : t[6] || '', ext : t[7] || '', search : t[8] || '', hash : t[9] || '' } : { uri : uri };
 	};
 	exports.isSameHost = function (uri, host) {
 		var t = root_re.exec(uri);
 		return t && t[0] === (host || (location && (location.protocol + '//' + location.host)));
 	};
+	/**
+	 * Format the uri including '///', './' or '../' pattern to normal uri.
+	 * @param {String}  uri the uri string to be normalized
+	 */
 	exports.normalize = normalize = function (uri) {
 		var s = uri.replace(slash_re, '/').replace(':/', '://').replace(relative_re, '');
 		while (parent_re.test(s)) {
@@ -292,6 +306,12 @@ define('util/uri', [], function (require, exports) {
 		}
 		return s;
 	};
+	/**
+	 * Format the uri based on the passed base string, and apply the changes from passed maps.
+	 * @param {String}  uri
+	 * @param {String}  ubase   base string
+	 * @param {String}  umaps   maps object, like ['en-us', 'zh-cn'] to replace all 'en-us' strings to 'zh-cn'
+	 */
 	exports.resolve = function (uri, ubase, umaps) {
 		var s = uri, i, l, t;
 		if (typeof ubase === 'Object') {
@@ -347,7 +367,9 @@ define('util/uri', [], function (require, exports) {
  * @module base/parser
  */
 define('base/parser', [], function (require, exports) {
+
 	'use strict';
+
 	// string|comment|(|) + uncertain slash|)|regexp
 	var re = /(".*?"|'.*?')|(\/\*[\s\S]*?\*\/|\/\/.*)|[\w$\]]\s*\/(?![*\/])|(?:[^$]return\s*)?(\/)[\s\S]*/g, re2 = /((\$|\.\s*)?\b(?:if|for|while)\b\s*)?(\()|(([\w$)\]])\s*)(\/([^\/*][\s\S]*$))|(\))|([^$]return\s*)?(\/(?:[^*\/\[\r\n]|\[.*?\])(?:[^\/\[\r\n]|\[.*?\])*\/[img]{0,3})((\/)?[\s\S]*)/g,
 		precompile = exports.precompile = function (code) {
@@ -470,7 +492,8 @@ define('base/parser', [], function (require, exports) {
  */
 define('base/load', [], function (require, exports) {
 	'use strict';
-	var root = this || window, doc = root.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
+
+	var root = window, doc = root.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
 		var ext = re.exec(uri);
 		return (ext && exts[ext[1]]) || 'js';
 	};
@@ -511,7 +534,7 @@ define('base/load', [], function (require, exports) {
 				} : function (node, uri, callback, ctx) {    // opera12-
 					// although it supports both 'onload' and 'onreadystatechange',
 					// but it won't trigger anything if 404, empty or invalid file, use timer instead
-					var body = !exports.preserve && doc.body, timer = ctx.setTimeout(function () {
+					var body = !exports.preserve && doc.body, timer = root.setTimeout(function () {
 						node.onload = null;
 						if (callback) {
 							callback.call(ctx, uri, false, node);
@@ -523,7 +546,7 @@ define('base/load', [], function (require, exports) {
 					}, exports.timeout);
 					node.onload = function (e) {
 						this.onload = null;
-						ctx.clearTimeout(timer);
+						root.clearTimeout(timer);
 						node = timer = null;
 						if (callback) {
 							callback.call(ctx, uri, true, this, e);
@@ -538,9 +561,9 @@ define('base/load', [], function (require, exports) {
 				node.type = 'text/javascript';
 				node.async = true; // https://developer.mozilla.org/en-US/docs/HTML/Element/script
 				node.charset = exports.charset;
-//				if (defer) {    // support by all browsers except Opera
-//					s.defer = true;
-//				}
+				//				if (defer) {    // support by all browsers except Opera
+				//					s.defer = true;
+				//				}
 				if (callback || !exports.preserve) { load(node, uri, callback, ctx); }
 				node.src = uri;
 				doc.body.appendChild(node);
@@ -558,15 +581,16 @@ define('base/load', [], function (require, exports) {
 					this.onload/* = this.onabort*/ = null;
 					try {
 						t = this.styleSheet.rules.length;
-					} catch (ex) {}
-					callback.call(ctx, uri, t, this, e || ctx.event);
+					} finally {
+						callback.call(ctx, uri, t, this, e || ctx.event);
+					}
 				};
 				node = null;
 			} : function (node, uri, callback, ctx) {
 				// ignore very old ff & webkit which don't trigger anything for all situations
 				var t = !ff && isSameHost(uri), timer;
 				if (node.onerror === undefined || ctx.opera) {   // opera won't trigger anything if 404
-					timer = ctx.setTimeout(function () {
+					timer = root.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
 						node = null;
@@ -575,7 +599,7 @@ define('base/load', [], function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						ctx.clearTimeout(timer);
+						root.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
@@ -599,7 +623,7 @@ define('base/load', [], function (require, exports) {
 			if (callback) {
 				// opera12- supports 'onerror', but won't trigger if 404 from different host
 				if (ctx.opera && !isSameHost(uri)) {
-					timer = ctx.setTimeout(function () {
+					timer = root.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, false, node);
 						node = null;
@@ -608,7 +632,7 @@ define('base/load', [], function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						ctx.clearTimeout(timer);
+						root.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
@@ -702,8 +726,9 @@ define('base/load', [], function (require, exports) {
  */
 define('util/console', [], function (require, exports, module) {
 	'use strict';
+
 	var root = this || window, console = root.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
-		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\r|\\n|\\r\\n/g, '<br>');
 	};
 	exports = module.exports = {
 		LOG         : 1,
@@ -749,7 +774,11 @@ define('util/console', [], function (require, exports, module) {
 		group       : function (title) {
 			var el;
 			title = title || '';
-			console.group ? console.group(title) : console.log(title);
+			if (console.group) {
+				console.group(title);
+			} else {
+				console.log(title);
+			}
 			if (exports.output) {
 				el = root.document.createElement('fieldset');
 				el.innerHTML = '<legend>' + escape(title) + '</legend>';
@@ -758,7 +787,11 @@ define('util/console', [], function (require, exports, module) {
 			}
 		},
 		groupEnd    : function () {
-			console.groupEnd ? console.groupEnd() : console.log('');
+			if (console.groupEnd) {
+				console.groupEnd();
+			} else {
+				console.log('');
+			}
 			if (exports.output) {
 				exports.output = this.output.parentNode;
 			}

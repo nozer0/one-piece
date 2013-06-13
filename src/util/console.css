@@ -1,11 +1,26 @@
 body { margin: 0; padding: 0; }
 
-#console { background: #078; color: #f0c674; padding: 10px; }
-#console * { color: #f0c674; }
+#console {
+	background: #078;
+	color: #f0c674;
+	padding: 10px;
+}
+
+#console * {
+	color: #f0c674;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	word-break: break-all;
+	word-wrap: break-word;
+}
 
 #console fieldset { padding: 0 10px; margin: 10px 2px; }
 
-#console p { font: 15px sans-serif; display: none; margin: 15px 0; }
+#console p {
+	font: 15px sans-serif;
+	display: none;
+	margin: 15px 0;
+}
 
 #console [name="log"]:checked~.log { display: block; }
 

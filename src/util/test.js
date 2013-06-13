@@ -1,18 +1,20 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-03 14:48
+ * Modified : 2013-06-11 17:39
  * Name     : util/test.js
  */
 
-	// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+/*global define */
+// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 define(function (require, exports) {
 	'use strict';
-	var console = define.modules.hasOwnProperty('util/console') ? require('util/console').constructor() : (this || window || {}).console || {log : 1, error : 1}, inspect = function (o) {
+
+	var console = define.modules.hasOwnProperty('util/console') ? require('util/console').constructor() : (this || window || {}).console || {log: 1, error: 1}, inspect = function (o) {
 		if (JSON) {
 			try {
 				return JSON.stringify(o);
-			} catch (e) {   // cyclic reference
+			} catch (ignore) {   // cyclic reference
 				var another = {}, os = [o], p, t, i, l;
 				for (p in o) {
 					if (o.hasOwnProperty(p)) {
@@ -42,7 +44,7 @@ define(function (require, exports) {
 		}
 		return o;
 	}, success = function (name, notall) {
-		console.info(name || 'o_p', 'passed');
+		console.info(name || '', 'passed');
 		if (!notall) {
 			this.passed += 1;
 			this.tested += 1;
@@ -51,7 +53,7 @@ define(function (require, exports) {
 			}
 		}
 	}, fail = function (name, notall, e) {
-		console.error(name || 'o_p', 'failed', e ? ', expected: ' + inspect(e.expected) + ', actual: ' + inspect(e.actual) : '');
+		console.error(name || '', 'failed', e ? ', expected: ' + inspect(e.expected) + ', actual: ' + inspect(e.actual) : '');
 		if (!notall) {
 			this.tested += 1;
 			if (this.tested === this.total) {
@@ -64,7 +66,7 @@ define(function (require, exports) {
 			this.tearDown();
 		}
 //		console.log('--->>>');
-		console.log('End test', this.name || 'o_p', '(' + t.toLocaleTimeString() + '), time:', t - this.start, 'ms, total:', i, ', success:', passed, ', failed:', i - passed);
+		console.log('End test', this.name || '', '(' + t.toLocaleTimeString() + '), time:', t - this.start, 'ms, total:', i, ', success:', passed, ', failed:', i - passed);
 		console.groupEnd();
 	};
 	exports.run = function (cases) {
@@ -73,7 +75,7 @@ define(function (require, exports) {
 		cases.fail = fail;
 		cases.finish = finish;
 		cases.total = cases.tested = cases.passed = 0;
-		console.group('Start test ' + (cases.name || 'o_p') + ' (' + t.toLocaleTimeString() + '):');
+		console.group('Start test ' + (cases.name || '') + ' (' + t.toLocaleTimeString() + '):');
 		if (typeof cases.setUp === 'function') {
 			cases.setUp();
 		}
@@ -91,7 +93,7 @@ define(function (require, exports) {
 					}
 				} catch (e) {
 					cases.tested += 1;
-					console.error(cases.name || 'o_p', 'failed', e ? ', expected: ' + inspect(e.expected) + ', actual: ' + inspect(e.actual) : '');
+					console.error(cases.name || '', 'failed', e ? ', expected: ' + inspect(e.expected) + ', actual: ' + inspect(e.actual) : '');
 				}
 			}
 		}

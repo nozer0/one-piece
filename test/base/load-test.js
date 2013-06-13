@@ -1,12 +1,15 @@
+/*global define */
 define(function (require) {
+	'use strict';
+
 	var console = require('util/console'), load = require('base/load').load, resolve = require('util/uri').resolve, uri = define.getCurrentScriptSrc(), test;
 	//log.level = 9;
 	test = require('util/test').run({
 		callback : function (url, success) {
-			var expected = this.urls ? this.urls[url] : !this.fail_expects[url];
+			var expected = this.urls[url];
 			console.info(url, this.cnt, success);
 			this.cnt -= 1;
-			if (expected ? !success : success) {
+			if (expected ^ success) {
 				this.fail = true;
 				test.fail(this.name, this.cnt, {expected : expected, actual : url});
 			} else if (!this.cnt) {

@@ -1,5 +1,7 @@
+/*global define */
 define(function (require) {
 	'use strict';
+
 	var assert = require('util/assert'), console = require('util/console').constructor();
 	require('util/test').run({
 		testLog	: function() {
