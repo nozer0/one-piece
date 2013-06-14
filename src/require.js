@@ -66,7 +66,7 @@
 	 * @param {Mixed}   definition      the definition function or object
 	 */
 	define = root.define = function (id, dependencies, definition) {
-		var modules = define.modules, m;
+		var modules = define.modules, m, cfg;
 		//		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
 		//			definition = id;
 		//			dependencies = define.parse(definition.toString());
@@ -93,7 +93,10 @@
 		if (define.debug && define.log) {
 			define.log(m.id + ' loaded');
 		}
-		define.resolveDependencies(m);
+		cfg = define.configModule;
+		if (!cfg || cfg.status === 4 || (cfg.dependencies && cfg.dependencies.hasOwnProperty(m.id))) {
+			define.resolveDependencies(m);
+		}
 	};
 
 	/**
@@ -126,7 +129,7 @@
 	uri_re = new RegExp('((?:' + define.base + ')?(.*?))(?:\\.js)?(?:[?#].*)?$');
 
 	define.config = function (cfg) {
-		var p, getModule, ms, i, plugins, l;
+		var p, m, deps, plugins, i, l, s;
 		if (cfg) {
 			for (p in cfg) {
 				if (cfg.hasOwnProperty(p)) {
@@ -137,11 +140,15 @@
 				uri_re = new RegExp('((?:' + cfg.base + ')?(.*?))(?:\\.js)?(?:[?#].*)?$');
 			}
 			define.loader.preserve = define.debug;
-//			if (cfg.plugins) {
-//				for (getModule = define.getModule, ms = define.premodules = [], i = 0, plugins = cfg.plugins, l = plugins.length; i < l; i += 1) {
-//					ms.push(getModule(plugins[i]).id);
-//				}
-//			}
+			m = define.configModule = define.getModule(define.configPath || getCurrentScriptSrc());
+			if (cfg.plugins) {
+				for (deps = m.dependencies = [], i = 0, plugins = cfg.plugins, l = plugins.length, s = 'require-'; i < l; i += 1) {
+					deps.push(s + plugins[i]);
+				}
+				if (!define.configPath) {   // not config by 'data-config' attribute
+					define.resolveDependencies(m);
+				}
+			}
 		}
 		return this;
 	};
@@ -197,7 +204,11 @@
 			if (m.status > 2 || (m.status === 2 && cyclic(define.modules, m.dependencies, [id]))) {   // INTERACTIVE, COMPLETE or cyclic dependencies
 				dependencies[m.id] = true;
 			} else {
-				m.ancestors.push(id);
+				if (m.ancestors) {
+					m.ancestors.push(id);
+				} else {
+					m.ancestors = [id];
+				}
 				wait += 1;
 				dependencies[m.id] = false;
 			}
@@ -211,8 +222,8 @@
 	};
 
 	define.onLoad = function (uri, ret) {
-		var m;
-		if (define.current_module) {
+		var m, cfg = define.configModule;
+		if (define.current_module && (!cfg || uri !== cfg.uri)) {
 			delete define.current_module;
 		} else {   // js file without 'define' or files of other types
 			m = define.getModule(uri);
@@ -252,6 +263,9 @@
 				}
 			}
 		}
+		if (define.onComplete) {
+			define.onComplete(module);
+		}
 		return module;
 	};
 
@@ -276,6 +290,30 @@
 			delete module.ancestors;
 		} else {
 			define.execModule(module);
+		}
+	};
+
+	define.onComplete = function (module) {
+		var modules, deps, p, m, resolveDependencies = define.resolveDependencies;
+		if (module === define.configModule) {
+			delete define.onComplete;
+			delete define.configModule;
+			modules = define.modules;
+			deps = module.dependencies;
+			for (p in modules) {
+				if (modules.hasOwnProperty(p)) {
+					m = modules[p];
+					if (m.status === 3 && deps.hasOwnProperty(p)) {
+						define.execModule(modules[p]);
+					} else if (m.status === 2) {
+						resolveDependencies(m);
+					}
+				}
+			}
+			m = define.main;
+			if (m && !m.status) {
+				define.load([m]);
+			}
 		}
 	};
 }());
@@ -808,9 +846,9 @@ define('util/console', [], function (require, exports, module) {
 	}
 });
 
-(function () {
+(function (ctx) {
 	'use strict';
-	var precompile = require('base/parser').precompile, loader = define.loader = require('base/load'), load = loader.load, resolve = define.resolve = require('util/uri').resolve;
+	var precompile = require('base/parser').precompile, loader = define.loader = require('base/load'), load = loader.load, resolve = define.resolve = require('util/uri').resolve, root = ctx || window, doc = root.document, current_script, ns, l, m;
 
 	delete define.current_module;
 
@@ -843,4 +881,25 @@ define('util/console', [], function (require, exports, module) {
 			load(m.uri = resolve(/\.\w+$/.test(m.path) ? m.path : m.path + '.js', '', maps), onLoad);
 		}
 	};
+
+	current_script = doc.currentScript || doc.getElementById('$_');
+	if (!current_script) {
+		for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {
+			current_script = ns[l -= 1];
+			if (current_script.readyState === 'interactive') {
+				break;
+			}
+		}
+	}
+	l = current_script.getAttribute('data-config');
+	if (l) {
+		define.load([m = define.configModule = define.getModule(define.configPath = resolve(l, root.location.href))]);
+	}
+	l = current_script.getAttribute('data-main');
+	if (l) {
+		define.main = define.getModule(resolve(l, root.location.href));
+		if (!m) {
+			define.load([define.main]);
+		}
+	}
 }());

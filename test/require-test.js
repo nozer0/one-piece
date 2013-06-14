@@ -45,6 +45,7 @@ $_.define('module-10', ['module-9'], function (require, exports, module) {
 	module.exports = require('module-9');
 });
 
+console.info('hello');
 define(function (require) {
 	'use strict';
 
