@@ -100,3 +100,19 @@ We can get the output
        in main, a.done=true, b.done=true
 
 The same result as [nodejs](http://nodejs.org/api/modules.html)
+
+### Usage ###
+
+You can simple add a script like.
+
+       <script id="$_" src="path/to/require.js" data-config="./config" data-main="./main"></script>
+
+Or combine normal scripts and 'data-*' attributes feature.
+
+       <script id="$_" src="path/to/require.js" data-config="./config"></script>
+       <script src="./main.js" defer></script>
+
+Even, although it's highly not encouraged.
+
+       <script id="$_" src="path/to/require.js" data-main="./main"></script>
+       <script src="./config.js"></script>
