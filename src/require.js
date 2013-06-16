@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-05 14:50
+ * Modified : 2013-06-14 17:12
  * Name     : require.js
  */
 

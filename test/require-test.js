@@ -45,14 +45,13 @@ $_.define('module-10', ['module-9'], function (require, exports, module) {
 	module.exports = require('module-9');
 });
 
-console.info('hello');
 define(function (require) {
 	'use strict';
 
-	var assert = require('util/assert'), test;
+	var assert = require('util/assert');
 	require('../src/require-shim'); // for safety, require again
 	require('./js/program');
-	test = require('util/test').run({
+	require('util/test').run({
 		testNormal    : function () {
 			var css = define.getModule('./css/test.css', require.main), body = document.getElementsByTagName('body')[0];
 			assert.strictEqual(require('./js/increment').increment(8), 9);
