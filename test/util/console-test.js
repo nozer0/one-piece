@@ -1,12 +1,9 @@
 /*global require */
+
 require('util/test').run({
 	name    : 'console',
-	setUp   : function () {
-		this.assert = require('util/assert');
-		this.console = require('util/console').constructor();
-	},
 	testLog : function () {
-		var assert = this.assert, console = this.console;
+		var assert = require('util/assert'), console = require('util/console');
 		assert.equal(console.log('hello', 'world'), 'hello world');
 		assert.equal(console.log('%s world', 'hello'), 'hello world');
 		assert.equal(console.log('%d, %d, %d', 1, 2, 3), '1, 2, 3');

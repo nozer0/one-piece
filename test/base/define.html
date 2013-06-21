@@ -8,14 +8,14 @@
 	<link rel="stylesheet" type="text/css" href="../../src/util/console.css">
 </head>
 <body>
-	<div id="console"></div>
 	<script src="../../src/base/define.js"></script>
 	<script src="../../src/util/console.js"></script>
 	<script src="../js/math.js"></script>
 	<script src="../js/increment.js"></script>
 	<script src="../js/program.js"></script>
 	<script defer>
-		var ms = define.modules, p, m, console = require('util/console').constructor();
+		/*global require,define */
+		var ms = define.modules, p, m, console = require('util/console');
 		console.info(define.getCurrentScriptSrc());
 		for (p in ms) {
 			if (ms.hasOwnProperty(p)) {

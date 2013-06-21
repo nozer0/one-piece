@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-11 17:41
+ * Modified : 2013-06-20 23:41
  * Name     : util/uri.js
  */
 
@@ -9,7 +9,7 @@
 define(function (require, exports) {
 	'use strict';
 
-	var base = '', maps = [], loc_re = /^(?:(\w+:)\/\/)?(([^:\/]+):?([\d]+)?)([^?#]+?([^\/?#]+?)?(\.\w*)?)(\?[^#]+)?(#\S*)?$/, protocol_re = /^\w+:\/\/\w/, root_re = /\w+:\/\/[^\/#?]+/, base_re = /[^\/]*$/, slash_re = /\/{2,}/g, relative_re = /\/\.(?=\/)/g, parent_re = /[^\/]+\/\.\.\//, location = (this || window).location, normalize;
+	var base = '', maps = [], loc_re = /^(?:(\w+:)\/\/)?(([^:\/]+):?([\d]+)?)([^?#]+?([^\/?#]+?)?(\.\w*)?)(\?[^#]+)?(#\S*)?$/, protocol_re = /^\w+:\/\/\w/, root_re = /\w+:\/\/[^\/#?]+/, base_re = /[^\/]*$/, slash_re = /\/{2,}/g, relative_re = /\/\.(?=\/)/g, parent_re = /[^\/]+\/\.\.\//, location = define.global.location, normalize;
 	exports.location = function (uri) {
 		var t = loc_re.exec(uri);
 		return t ? { uri : t[1] ? uri : 'http://' + uri, protocol : t[1] || 'http:', host : t[2], hostname : t[3], port : t[4] || '', pathname : t[5] || '', basename : t[6] || '', ext : t[7] || '', search : t[8] || '', hash : t[9] || '' } : { uri : uri };
@@ -44,7 +44,7 @@ define(function (require, exports) {
 		if (!protocol_re.test(s)) {
 			t = typeof ubase === 'string' ? ubase : base;
 			if (t) {
-				if (s[0] === '/') {
+				if (/^\//.test(s)) {    // IE7- returns undefined for s[0]
 					t = root_re.exec(t);
 					if (t) {
 						s = t[0] + s;

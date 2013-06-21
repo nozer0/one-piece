@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-03 17:57
+ * Modified : 2013-06-20 22:00
  * Name     : base/define.js
  *
  * a wrapper function to for user to write in unique format working with AMD, CommonJS, NodeJS, CMD or Global
@@ -10,7 +10,7 @@
 (function (ctx) {
 	'use strict';
 
-	var root = ctx || window, _define = root.define, doc = root.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, uri_re = /\/[^\/]+\/(.*?)(?:\.\w+)?(?:[?#].*)?$/, define, modules, normalize, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
+	var global = ctx || window, _define = global.define, doc = global.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, uri_re = /\/[^\/]+\/(.*?)(?:\.\w+)?(?:[?#].*)?$/, define, modules, normalize, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
 		try {
 			this.__();
 		} catch (e) {
@@ -32,7 +32,7 @@
 			 *
 			 * @see http://www.cnblogs.com/rubylouvre/archive/2013/01/23/2872618.html
 			 */
-			var s = e.stack || e.stacktrace || (window.opera && e.message), ns, l;
+			var s = e.stack || e.stacktrace || (global.opera && e.message), ns, l, src;
 			if (s) {    // safari5- and IE6-9 not support
 				s = stack_re.exec(s);
 				if (s) { return s[1]; }
@@ -40,22 +40,24 @@
 				for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {
 					s = ns[l -= 1];
 					if (s.readyState === 'interactive') {
-						return s.getAttribute('src', 4);    // for IE6-7, 's.src' won't return full url
+						// for IE8-, 's.src' won't return full url, in contract, IE8+ can only get full rul via 's.src'
+						src = doc.querySelector ? s.src : s.getAttribute('src', 4);
+						break;
 					}
 				}
 			}
-			return root.location && root.location.href;
+			return src || (global.location && global.location.href);    // internal script will return '' for 'src'
 		}
 	} : function () { // ff 4+
 		// https://developer.mozilla.org/en-US/docs/DOM/document.currentScript
 		var s = doc.currentScript;
-		return s ? s.src || s.baseURI : root.location && root.location.href;
+		return s ? s.src || s.baseURI : global.location && global.location.href;
 	};
 
 	if (!(_define && typeof _define === 'function' && (_define.amd || _define.cmd))) {    // AMD or CMD
-		define = root.define = (root.module && typeof root.module.declare === 'function' && root.module.declare) || // CommonJS
-			(typeof root.require === 'function' && typeof root.exports === 'object' && function (factory) {   // NodeJS
-				factory(root.require, root.exports, root.module);
+		define = global.define = (global.module && typeof global.module.declare === 'function' && global.module.declare) || // CommonJS
+			(typeof global.require === 'function' && typeof global.exports === 'object' && function (factory) {   // NodeJS
+				factory(global.require, global.exports, global.module);
 			});
 		if (!define) {
 			normalize = function (uri) {
@@ -65,23 +67,26 @@
 				}
 				return s;
 			};
-			root.require = function (id) {
+			global.require = function (id) {
 				var m = modules[id] || modules[normalize((define.current_path || (uri_re.exec(getCurrentScriptSrc()) || [0, ''])[1]).replace(/[^\/]*$/, id))];
 				if (m) { return m.exports; }
 				throw id + ' is not defined';
 			};
-			define = root.define = function (id, factory) {    // Global
+			define = global.define = function (id, factory) {    // Global
 				var uri = getCurrentScriptSrc(), re = /[^\/]*$/, t = uri_re.exec(uri), path = define.base ? t[1].replace(new RegExp(define.base + '\\/'), '') : t[1], m;
 				if (typeof id === 'string') {
 					path = path.replace(re, id);
 				} else {
 					factory = id;
 				}
-				m = modules[path] = {id: re.exec(path)[0], path: path, uri: uri, exports: {}};
+				m = modules[path] = {id : re.exec(path)[0], path : path, uri : uri, exports : {}};
 				if (typeof factory === 'function') {
 					m.factory = factory;
 					define.current_path = path;
-					factory.call(define.context, root.require, m.exports, m);
+					factory.call(define.context, global.require, m.exports, m);
+					if (m.exports.constructor) {
+						m.exports.constructor();
+					}
 					define.current_path = null;
 				} else {
 					m = m.exports;
@@ -94,7 +99,7 @@
 				return m;
 			};
 			define.base = 'one-piece/src';
-			define.context = root;
+			define.context = define.global = global;
 			modules = define.modules = {};
 		}
 	}

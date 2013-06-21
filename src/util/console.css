@@ -14,12 +14,19 @@ body { margin: 0; padding: 0; }
 	word-wrap: break-word;
 }
 
-#console fieldset { padding: 0 10px; margin: 10px 2px; }
+#console fieldset { padding: 0 10px; margin: 10px 2px; height: auto; }
 
 #console p {
 	font: 15px sans-serif;
-	display: none;
 	margin: 15px 0;
+	display: none;
+	display: block\0;    /* IE8- doesn't recognise the :checked selector */
+}
+
+@media all and (monochrome:0) { /* reset IE9+ */
+	#console p {
+		display: none\9;
+	}
 }
 
 #console [name="log"]:checked~.log { display: block; }

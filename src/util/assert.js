@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-11 17:31
+ * Modified : 2013-06-20 23:31
  * Name     : util/assert.js
  */
 
@@ -10,7 +10,39 @@
 define(function (require, exports, module) {
 	'use strict';
 
-	var AssertionError = exports.AssertionError = function (cfg) {
+	var inspect = define.global.JSON ? function (o) {
+		try {
+			return JSON.stringify(o);
+		} catch (ignore) {   // cyclic reference
+			var another = {}, os = [o], p, t, i, l;
+			for (p in o) {
+				if (o.hasOwnProperty(p)) {
+					t = o[p];
+					if (t.constructor === Object) {
+						for (i = 0, l = os.length; i < l; i += 1) {
+							if (os[i] === t) {
+								another[p] = '[cyclic object]';
+								break;
+							}
+						}
+						if (i === l) {
+							os.push(t);
+							another[p] = t;
+						}
+					} else {
+						another[p] = t;
+					}
+				}
+			}
+			return JSON.stringify(another);
+		}
+	} : function (o) {
+		if (o) {
+			if (o.toSource && (o.constructor === Object || o.constructor === Array)) { return o.toSource(); }
+			if (o.constructor === Date) { return o.toISOString(); }
+		}
+		return o;
+	}, AssertionError = exports.AssertionError = function (cfg) {
 		var msg = this.message = (cfg && cfg.message) || 'AssertionError';
 		this.name = 'AssertionError';
 		if (cfg) {
@@ -21,6 +53,9 @@ define(function (require, exports, module) {
 	}, deep;
 	AssertionError.prototype = new Error();
 	AssertionError.prototype.constructor = AssertionError;
+	AssertionError.prototype.toString = function () {
+		return (this.message ? this.message + ', expected: ' : 'expected: ') + inspect(this.expected) + ', actual: ' + inspect(this.actual);
+	};
 	deep = function (actual, expected, matched, matched2) {
 		var t = typeof actual, i, l, p, o, o2;
 		if (t !== 'object') { return actual === expected; }
@@ -64,44 +99,44 @@ define(function (require, exports, module) {
 		return !l && actual.prototype === expected.prototype;
 	};
 	module.exports = {
-		AssertionError: AssertionError,
-		ok: function (guard, msg) {
+		AssertionError : AssertionError,
+		ok             : function (guard, msg) {
 			if (!guard) {
-				throw new AssertionError({message: msg, actual: guard, expected: true});
+				throw new AssertionError({message : msg, actual : guard, expected : true});
 			}
 		},
-		equal: function (actual, expected, msg) {
+		equal          : function (actual, expected, msg) {
 			if (actual != expected && (!actual || actual.constructor !== Date || String(actual) !== String(expected))) {
-				throw new AssertionError({message: msg, actual: actual, expected: expected});
+				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
-		notEqual: function (actual, expected, msg) {
+		notEqual       : function (actual, expected, msg) {
 			if (actual == expected || (actual && actual.constructor === Date && String(actual) === String(expected))) {
-				throw new AssertionError({message: msg, actual: actual, expected: expected});
+				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
-		strictEqual: function (actual, expected, msg) {
+		strictEqual    : function (actual, expected, msg) {
 			if (actual !== expected) {
-				throw new AssertionError({message: msg, actual: actual, expected: expected});
+				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
-		notStrictEqual: function (actual, expected, msg) {
+		notStrictEqual : function (actual, expected, msg) {
 			if (actual === expected) {
-				throw new AssertionError({message: msg, actual: actual, expected: expected});
+				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
-		deepEqual: function (actual, expected, msg) {
+		deepEqual      : function (actual, expected, msg) {
 			if (!deep(actual, expected, [], [])) {
-				throw new AssertionError({message: msg, actual: actual, expected: expected});
+				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
-		notDeepEqual: function (actual, expected, msg) {
+		notDeepEqual   : function (actual, expected, msg) {
 			if (deep(actual, expected, [], [])) {
-				throw new AssertionError({message: msg, actual: actual, expected: expected});
+				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
-		throws: function (block, error_opt, msg) {
-			throw new AssertionError({message: msg});
+		throws         : function (actual, expected, msg) {
+			throw new AssertionError({message : msg, actual : actual, expected : expected});
 		}
 	};
 });

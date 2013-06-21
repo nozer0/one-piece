@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-14 17:12
+ * Modified : 2013-06-20 22:00
  * Name     : require.js
  */
 
@@ -9,49 +9,50 @@
 (function (ctx) {
 	'use strict';
 
-	var root = ctx || window, doc = root.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
-		try {
-			this.__();
-		} catch (e) {
-			/*
-			 * https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error/Stack
-			 * stack
-			 *  chrome23:   at http://localhost:8080/path/name.js:2:2
-			 *  firefox17:  @http://localhost:8080/path/name.js:2
-			 *  opera12:    @http://localhost:8080/path/name.js:2
-			 *  ie10:       at Global code (http://localhost:8080/path/name.js:2:2)
-			 *
-			 * stacktrace
-			 *  opera11:    line 2, column 2 in http://localhost:8080/path/name.js:
-			 *  opera10b:   @http://localhost:8080/path/name.js:2
-			 *  opera10a:   Line 2 of inline#2 script in http://localhost:8080/path/name.js: In function foo\n
-			 *
-			 * message
-			 *  opera9:     Line 2 of inline#2 script in http://localhost:8080/path/name.js\n
-			 *
-			 * @see http://www.cnblogs.com/rubylouvre/archive/2013/01/23/2872618.html
-			 */
-			var s = e.stack || e.stacktrace || (window.opera && e.message), ns, l;
-			if (s) {    // safari5- and IE6-9 not support
-				s = stack_re.exec(s);
-				if (s) { return s[1]; }
-			} else {    // IE6-9
-				ns = doc.getElementsByTagName('script');
-				l = ns.length;
-				while (l) {
-					s = ns[l -= 1];
-					if (s.readyState === 'interactive') {
-						return s.getAttribute('src', 4);    // for IE6-7, 's.src' won't return full url
+	var global = ctx || window, doc = global.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/,
+		getCurrentScriptSrc = doc.currentScript === undefined ? function () {
+			try {
+				this.__();
+			} catch (e) {
+				/*
+				 * https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error/Stack
+				 * stack
+				 *  chrome23:   at http://localhost:8080/path/name.js:2:2
+				 *  firefox17:  @http://localhost:8080/path/name.js:2
+				 *  opera12:    @http://localhost:8080/path/name.js:2
+				 *  ie10:       at Global code (http://localhost:8080/path/name.js:2:2)
+				 *
+				 * stacktrace
+				 *  opera11:    line 2, column 2 in http://localhost:8080/path/name.js:
+				 *  opera10b:   @http://localhost:8080/path/name.js:2
+				 *  opera10a:   Line 2 of inline#2 script in http://localhost:8080/path/name.js: In function foo\n
+				 *
+				 * message
+				 *  opera9:     Line 2 of inline#2 script in http://localhost:8080/path/name.js\n
+				 *
+				 * @see http://www.cnblogs.com/rubylouvre/archive/2013/01/23/2872618.html
+				 */
+				var s = e.stack || e.stacktrace || (global.opera && e.message), ns, l, src;
+				if (s) {    // safari5- and IE6-9 not support
+					s = stack_re.exec(s);
+					if (s) { return s[1]; }
+				} else {    // IE6-9
+					for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {
+						s = ns[l -= 1];
+						if (s.readyState === 'interactive') {
+							// for IE8-, 's.src' won't return full url, in contract, IE8+ can only get full rul via 's.src'
+							src = doc.querySelector ? s.src : s.getAttribute('src', 4);
+							break;
+						}
 					}
 				}
+				return src || (global.location && global.location.href);    // internal script will return '' for 'src'
 			}
-			return root.location && root.location.href;
-		}
-	} : function () { // ff 4+
-		// https://developer.mozilla.org/en-US/docs/DOM/document.currentScript
-		var s = doc.currentScript;
-		return s ? s.src || s.baseURI : root.location && root.location.href;
-	}, define, require, uri_re;
+		} : function () { // ff 4+
+			// https://developer.mozilla.org/en-US/docs/DOM/document.currentScript
+			var s = doc.currentScript;
+			return s ? s.src || s.baseURI : global.location && global.location.href;
+		}, define, require, uri_re;
 
 	/**
 	 * For developers, it's simple and clear to implement each module in separate file in developing phase,
@@ -65,21 +66,21 @@
 	 * @param {Array}   dependencies    the dependencies array, it's only used in combine file
 	 * @param {Mixed}   definition      the definition function or object
 	 */
-	define = root.define = function (id, dependencies, definition) {
+	define = global.define = function (id, dependencies, definition) {
 		var modules = define.modules, m, cfg;
-		//		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
-		//			definition = id;
-		//			dependencies = define.parse(definition.toString());
-		//			id = null;
-		//		} else if (!(dependencies instanceof Array)) {
-		//			definition = dependencies;
-		//			if (id instanceof Array) {  // define(deps, def)
-		//				dependencies = id;
-		//				id = null;
-		//			} else {    // define(id, def)
-		//				dependencies = define.parse(definition.toString());
-		//			}
-		//		}   // define(id, deps, def)
+//		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
+//			definition = id;
+//			dependencies = define.parse(definition.toString());
+//			id = null;
+//		} else if (!(dependencies instanceof Array)) {
+//			definition = dependencies;
+//			if (id instanceof Array) {  // define(deps, def)
+//				dependencies = id;
+//				id = null;
+//			} else {    // define(id, def)
+//				dependencies = define.parse(definition.toString());
+//			}
+//		}   // define(id, deps, def)
 		if (typeof id === 'string') {
 			m = modules.hasOwnProperty(id) ? modules[id] : modules[id] = {id : id, path : define.base + id, exports : {}, status : 0};
 			m.dependencies = dependencies;
@@ -102,7 +103,7 @@
 	/**
 	 * @param {String} id   both relative and absolute uris like './xxx', '../xxx', '/xxx/yyy' and even 'http://outof.domain.com/xxx/yyy' are as same as normal uri, for global uris like 'xxx/yyy', which is based on the 'base' option
 	 */
-	require = root.require = define.require = function (id) {
+	require = global.require = define.require = function (id) {
 		var m = define.getModule(id, require.main), main;
 		if (m) {
 			// lazy execute until first require called
@@ -125,7 +126,7 @@
 	define.modules = {};
 	define.base = /.*?(?=[^\/]*$)/.exec(getCurrentScriptSrc())[0];
 	define.alias = {};
-	define.context = root;
+	define.context = define.global = global;
 	uri_re = new RegExp('((?:' + define.base + ')?(.*?))(?:\\.js)?(?:[?#].*)?$');
 
 	define.config = function (cfg) {
@@ -155,12 +156,14 @@
 
 	define.getModule = function (uri, parent) {
 		var modules = define.modules, id, t;
+		if (modules.hasOwnProperty(uri)) {
+			return modules[uri];
+		}
 		if (parent && parent.maps.hasOwnProperty(uri)) {
 			return modules[parent.maps[uri]];
 		}
 		id = define.alias[uri] || uri;
-		t = id[0];
-		if (t === '.' || t === '/') {
+		if (/^[.\/]/.test(id)) { // IE7- returns undefined for s[0]
 			id = define.resolve(id, parent ? parent.path : define.base);
 		}
 		if (id.indexOf(':') === -1) {
@@ -222,23 +225,21 @@
 	};
 
 	define.onLoad = function (uri, ret) {
-		var m, cfg = define.configModule;
-		if (define.current_module && (!cfg || uri !== cfg.uri)) {
+		var m = define.getModule(uri);
+		if (define.current_module === m) {
 			delete define.current_module;
-		} else {   // js file without 'define' or files of other types
-			m = define.getModule(uri);
-			if (ret) {
-				m.status = 2;   // LOADED
-				if (define.debug && define.log) {
-					define.log(m.id + ' loaded');
-				}
-				define.resolveDependencies(m);
-			} else {
-				m.status = -1;  // FAILED
-				if (define.debug && define.log) {
-					define.log(m.id + ' failed');
-				}
+		}
+		if (!ret) {
+			m.status = -1;  // FAILED
+			if (define.debug && define.log) {
+				define.log(m.id + ' failed');
 			}
+		} else if (m.status < 2) {  // js file without 'define' or files of other types
+			m.status = 2;   // LOADED
+			if (define.debug && define.log) {
+				define.log(m.id + ' loaded');
+			}
+			define.resolveDependencies(m);
 		}
 	};
 
@@ -324,7 +325,7 @@
 define('util/uri', [], function (require, exports) {
 	'use strict';
 
-	var base = '', maps = [], loc_re = /^(?:(\w+:)\/\/)?(([^:\/]+):?([\d]+)?)([^?#]+?([^\/?#]+?)?(\.\w*)?)(\?[^#]+)?(#\S*)?$/, protocol_re = /^\w+:\/\/\w/, root_re = /\w+:\/\/[^\/#?]+/, base_re = /[^\/]*$/, slash_re = /\/{2,}/g, relative_re = /\/\.(?=\/)/g, parent_re = /[^\/]+\/\.\.\//, location = (this || window).location, normalize;
+	var base = '', maps = [], loc_re = /^(?:(\w+:)\/\/)?(([^:\/]+):?([\d]+)?)([^?#]+?([^\/?#]+?)?(\.\w*)?)(\?[^#]+)?(#\S*)?$/, protocol_re = /^\w+:\/\/\w/, root_re = /\w+:\/\/[^\/#?]+/, base_re = /[^\/]*$/, slash_re = /\/{2,}/g, relative_re = /\/\.(?=\/)/g, parent_re = /[^\/]+\/\.\.\//, location = define.global.location, normalize;
 	exports.location = function (uri) {
 		var t = loc_re.exec(uri);
 		return t ? { uri : t[1] ? uri : 'http://' + uri, protocol : t[1] || 'http:', host : t[2], hostname : t[3], port : t[4] || '', pathname : t[5] || '', basename : t[6] || '', ext : t[7] || '', search : t[8] || '', hash : t[9] || '' } : { uri : uri };
@@ -359,7 +360,7 @@ define('util/uri', [], function (require, exports) {
 		if (!protocol_re.test(s)) {
 			t = typeof ubase === 'string' ? ubase : base;
 			if (t) {
-				if (s[0] === '/') {
+				if (/^\//.test(s)) {    // IE7- returns undefined for s[0]
 					t = root_re.exec(t);
 					if (t) {
 						s = t[0] + s;
@@ -405,7 +406,6 @@ define('util/uri', [], function (require, exports) {
  * @module base/parser
  */
 define('base/parser', [], function (require, exports) {
-
 	'use strict';
 
 	// string|comment|(|) + uncertain slash|)|regexp
@@ -422,7 +422,7 @@ define('base/parser', [], function (require, exports) {
 				}
 				if (cm) {
 					comments.push(m);
-					return '\xa0';  // it can use '\s' to match
+					return ' ';  // it can use '\s' to match, '\xa0' not match '\s' on IE8-
 				}
 				return m;
 			}, replacer2 = function (m, lp_prefix, $, lp, slash_prefix, slash_w$, slash_suffix, slash_suffix2, rp, regexp_prefix, regexp, regexp_suffix, slash) {
@@ -457,10 +457,10 @@ define('base/parser', [], function (require, exports) {
 					regexps.push(regexp);
 					if (slash) {    // maybe divisor follow on
 						s = regexp_suffix.replace(/^/, 0).replace(re, replacer);
-						return regexp_prefix + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s).replace(0, '');
+						return (regexp_prefix || '') + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s).replace(0, '');
 					}
 					s = regexp_suffix.replace(re, replacer);
-					return regexp_prefix + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s);
+					return (regexp_prefix || '') + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s);
 				}
 				return m;
 			}, s = code.replace(/\\[\s\S]/g,
@@ -531,7 +531,7 @@ define('base/parser', [], function (require, exports) {
 define('base/load', [], function (require, exports) {
 	'use strict';
 
-	var root = window, doc = root.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
+	var global = define.global, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
 		var ext = re.exec(uri);
 		return (ext && exts[ext[1]]) || 'js';
 	};
@@ -561,7 +561,7 @@ define('base/load', [], function (require, exports) {
 						if (!rs || rs === 'loaded' || rs === 'complete') {
 							this.onload = this.onerror/* = this.onabort*/ = this.onreadystatechange = null;
 							if (callback) {
-								callback.call(ctx, uri, rs || e.type === 'load', this, e || ctx.event);
+								callback.call(ctx, uri, rs || e.type === 'load', this, e || global.event);
 							}
 							if (body) {
 								body.removeChild(this);
@@ -572,7 +572,7 @@ define('base/load', [], function (require, exports) {
 				} : function (node, uri, callback, ctx) {    // opera12-
 					// although it supports both 'onload' and 'onreadystatechange',
 					// but it won't trigger anything if 404, empty or invalid file, use timer instead
-					var body = !exports.preserve && doc.body, timer = root.setTimeout(function () {
+					var body = !exports.preserve && doc.body, timer = global.setTimeout(function () {
 						node.onload = null;
 						if (callback) {
 							callback.call(ctx, uri, false, node);
@@ -584,7 +584,7 @@ define('base/load', [], function (require, exports) {
 					}, exports.timeout);
 					node.onload = function (e) {
 						this.onload = null;
-						root.clearTimeout(timer);
+						global.clearTimeout(timer);
 						node = timer = null;
 						if (callback) {
 							callback.call(ctx, uri, true, this, e);
@@ -599,9 +599,9 @@ define('base/load', [], function (require, exports) {
 				node.type = 'text/javascript';
 				node.async = true; // https://developer.mozilla.org/en-US/docs/HTML/Element/script
 				node.charset = exports.charset;
-				//				if (defer) {    // support by all browsers except Opera
-				//					s.defer = true;
-				//				}
+//				if (defer) {    // support by all browsers except Opera
+//					s.defer = true;
+//				}
 				if (callback || !exports.preserve) { load(node, uri, callback, ctx); }
 				node.src = uri;
 				doc.body.appendChild(node);
@@ -609,7 +609,7 @@ define('base/load', [], function (require, exports) {
 			};
 		}()),
 		css : (function () {
-			var head = doc.getElementsByTagName('head')[0], ua = root.navigator.userAgent, ff = /Firefox\/\d/.test(ua), load = /MSIE \d/.test(ua) ? function (node, uri, callback, ctx) {
+			var head = doc.getElementsByTagName('head')[0], ua = global.navigator.userAgent, ff = /Firefox\/\d/.test(ua), load = /MSIE \d/.test(ua) ? function (node, uri, callback, ctx) {
 				// IE triggers 'load' for all situations, and 'styleSheet.rules' is accessible immediately if load or same host,
 				// if 404 from different host, access is denied for 'styleSheet.rules',
 				// IE8- use 'styleSheet.rules' rather than 'sheet.cssRules' for other browsers
@@ -619,16 +619,15 @@ define('base/load', [], function (require, exports) {
 					this.onload/* = this.onabort*/ = null;
 					try {
 						t = this.styleSheet.rules.length;
-					} finally {
-						callback.call(ctx, uri, t, this, e || ctx.event);
-					}
+					} catch (ingore) {}
+					callback.call(ctx, uri, t, this, e || global.event);
 				};
 				node = null;
 			} : function (node, uri, callback, ctx) {
 				// ignore very old ff & webkit which don't trigger anything for all situations
 				var t = !ff && isSameHost(uri), timer;
-				if (node.onerror === undefined || ctx.opera) {   // opera won't trigger anything if 404
-					timer = root.setTimeout(function () {
+				if (node.onerror === undefined || global.opera) {   // opera won't trigger anything if 404
+					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
 						node = null;
@@ -637,7 +636,7 @@ define('base/load', [], function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						root.clearTimeout(timer);
+						global.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
@@ -660,8 +659,8 @@ define('base/load', [], function (require, exports) {
 			var node = new Image(), timer;
 			if (callback) {
 				// opera12- supports 'onerror', but won't trigger if 404 from different host
-				if (ctx.opera && !isSameHost(uri)) {
-					timer = root.setTimeout(function () {
+				if (global.opera && !isSameHost(uri)) {
+					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, false, node);
 						node = null;
@@ -670,11 +669,11 @@ define('base/load', [], function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						root.clearTimeout(timer);
+						global.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
-					e = e || ctx.event;
+					e = e || global.event;
 					callback.call(ctx, uri, e.type === 'load', this, e);
 				};
 			}
@@ -752,7 +751,7 @@ define('base/load', [], function (require, exports) {
 			type = getType(uri);
 		}
 		if (loaders[type]) {
-			loaders[type](uri, callback, ctx || define.context || root);
+			loaders[type](uri, callback, ctx || define.context || global);
 			return true;
 		}
 		return false;
@@ -765,9 +764,9 @@ define('base/load', [], function (require, exports) {
 define('util/console', [], function (require, exports, module) {
 	'use strict';
 
-	var root = this || window, console = root.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
+	var global = define.global, console = global.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
 		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\r|\\n|\\r\\n/g, '<br>');
-	};
+	}, _join = Array.prototype.join;
 	exports = module.exports = {
 		LOG         : 1,
 		INFO        : 2,
@@ -777,19 +776,16 @@ define('util/console', [], function (require, exports, module) {
 			var el;
 			if (this.console) { return this; }
 			_level = level || 15;
-			if (root === window) {
-				el = this.console = this.output = root.document.createElement('div');
+			if (global === window) {
+				el = this.console = this.output = global.document.createElement('div');
 				el.innerHTML = (1 & _level ? '<input type="checkbox" name="log" checked>log' : '') + (2 & _level ? '<input type="checkbox" name="info" checked>info' : '') + (4 & _level ? '<input type="checkbox" name="warn" checked>warn' : '') + (1 & _level ? '<input type="checkbox" name="error" checked>error' : '') + '<br>';
 				el.id = 'console';
-				root.document.getElementsByTagName('body')[0].appendChild(el);
+				global.document.getElementsByTagName('body')[0].appendChild(el);
 			}
 			return this;
 		},
 		_log        : function (logs, level) {
 			var m = maps[level] || 'log', s, i, l, subs;
-			if (console) {
-				console[m].apply(console, logs);
-			}
 			if (exports.output && (level & _level)) {
 				l = logs.length;
 				s = logs[0];
@@ -802,6 +798,14 @@ define('util/console', [], function (require, exports, module) {
 					}
 				}
 				exports.output.innerHTML += '<p class="' + m + '">' + (typeof s === 'string' ? escape(s) : s) + '</p>';
+			}
+			if (console) {
+				l = console[m];
+				if (typeof l === 'function') {
+					l.apply(console, logs);
+				} else {
+					console[m](s || _join.call(logs, ' '));
+				}
 			}
 			return s;
 		},
@@ -818,7 +822,7 @@ define('util/console', [], function (require, exports, module) {
 				console.log(title);
 			}
 			if (exports.output) {
-				el = root.document.createElement('fieldset');
+				el = global.document.createElement('fieldset');
 				el.innerHTML = '<legend>' + escape(title) + '</legend>';
 				exports.output.appendChild(el);
 				exports.output = el;
@@ -839,16 +843,17 @@ define('util/console', [], function (require, exports, module) {
 			return fn.apply(exports, args);
 		}
 	};
+	//noinspection JSLint
 	for (p in console) {
-		if (console.hasOwnProperty(p) && !exports.hasOwnProperty(p)) {
+		if (!exports.hasOwnProperty(p) && (console.hasOwnProperty ? console.hasOwnProperty(p) : true)) {
 			exports[p] = console[p];
 		}
 	}
 });
 
-(function (ctx) {
+(function () {
 	'use strict';
-	var precompile = require('base/parser').precompile, loader = define.loader = require('base/load'), load = loader.load, resolve = define.resolve = require('util/uri').resolve, root = ctx || window, doc = root.document, current_script, ns, l, m;
+	var precompile = require('base/parser').precompile, loader = define.loader = require('base/load'), load = loader.load, resolve = define.resolve = require('util/uri').resolve, global = define.global, doc = global.document, current_script, ns, l, m;
 
 	delete define.current_module;
 
@@ -893,11 +898,11 @@ define('util/console', [], function (require, exports, module) {
 	}
 	l = current_script.getAttribute('data-config');
 	if (l) {
-		define.load([m = define.configModule = define.getModule(define.configPath = resolve(l, root.location.href))]);
+		define.load([m = define.configModule = define.getModule(define.configPath = resolve(l, global.location.href))]);
 	}
 	l = current_script.getAttribute('data-main');
 	if (l) {
-		define.main = define.getModule(resolve(l, root.location.href));
+		define.main = define.getModule(resolve(l, global.location.href));
 		if (!m) {
 			define.load([define.main]);
 		}

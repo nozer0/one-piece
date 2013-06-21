@@ -49,30 +49,32 @@ define(function (require) {
 	'use strict';
 
 	var assert = require('util/assert');
-	require('../src/require-shim'); // for safety, require again
+//	require('../src/require-shim'); // for safety, require again
 	require('./js/program');
 	require('util/test').run({
-		testNormal    : function () {
+		testNormal   : function () {
 			var css = define.getModule('./css/test.css', require.main), body = document.getElementsByTagName('body')[0];
-			assert.strictEqual(require('./js/increment').increment(8), 9);
-			assert.strictEqual(css.status, 3);
+			assert.strictEqual(require('./js/increment').increment(8), 9, 'increment(8)');
+			assert.strictEqual(css.status, 3, 'test.css status');
 			require('./css/test.css');
-			assert.strictEqual(css.status, 4);
-			assert.strictEqual(body.currentStyle ? body.currentStyle.backgroundColor : window.getComputedStyle(body, null).getPropertyValue('background-color'), 'rgb(222, 237, 247)');
-		},
-		testCyclic    : function () {
-			var console = window.console = require('util/console'), nodes = console.output.childNodes, i = nodes.length, l, s = [], n;
-			require('./js/main.js');
-			for (l = nodes.length; i < l; i += 1) {
-				n = nodes[i];
-				s.push(n.innerText || n.textContent);
+			assert.strictEqual(css.status, 4, 'test.css status');
+			if (body.currentStyle) {
+				assert.strictEqual(body.currentStyle.backgroundColor, '#deedf7', 'backgroundColor');
+			} else {
+				assert.strictEqual(window.getComputedStyle(body, null).getPropertyValue('background-color'), 'rgb(222, 237, 247)', 'backgroundColor');
 			}
+		},
+		testCyclic   : function () {
+			var _console = require('util/console'), s = [];
+			define.global.console = {log : function () { s.push(_console.log.apply(_console, arguments)); }};
+			require('./js/main.js');
+			define.global.console = _console;
 			assert.strictEqual(s.join('\n').replace(/\xA0/g, ' '), 'main starting\na starting\nb starting\nin b, a.done = false\nb done\nin a, b.done = true\na done\nin main, a.done=true, b.done=true');
 		},
 		testMultiple : function () {
 			assert.strictEqual(require('module-10').value, '0');
 		},
-		testShim : function () {
+		testShim     : function () {
 			assert.strictEqual(require('underscore').size({a : 1, b : 2, c : 3}), 3);
 		}
 	});

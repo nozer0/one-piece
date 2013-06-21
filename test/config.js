@@ -1,7 +1,7 @@
 /*global define */
 define.config({
 	debug   : 0,
-	alias   : {'underscore' : 'https://raw.github.com/documentcloud/underscore/master/underscore.js'},
+	alias   : {'underscore' : 'http://underscorejs.org/underscore.js'},
 	plugins : ['shim'],
-	shims   : {'https://raw.github.com/documentcloud/underscore/master/underscore' : '_'}
+	shims   : {'http://underscorejs.org/underscore' : '_'}
 });

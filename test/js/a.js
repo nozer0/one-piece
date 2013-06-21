@@ -1,3 +1,4 @@
+/*global define */
 define(function (require, exports) {
 	console.log('a starting');
 	exports.done = false;

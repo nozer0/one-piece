@@ -1,11 +1,11 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-03 15:50
+ * Modified : 2013-06-20 23:50
  * Name     : base/parser.js
  */
 
-/*global require,define */
+/*global define */
 /**
  * based on ecma-262 edition 5.1
  *
@@ -44,7 +44,7 @@ define(function (require, exports) {
 				}
 				if (cm) {
 					comments.push(m);
-					return '\xa0';  // it can use '\s' to match
+					return ' ';  // it can use '\s' to match, '\xa0' not match '\s' on IE8-
 				}
 				return m;
 			}, replacer2 = function (m, lp_prefix, $, lp, slash_prefix, slash_w$, slash_suffix, slash_suffix2, rp, regexp_prefix, regexp, regexp_suffix, slash) {
@@ -79,10 +79,10 @@ define(function (require, exports) {
 					regexps.push(regexp);
 					if (slash) {    // maybe divisor follow on
 						s = regexp_suffix.replace(/^/, 0).replace(re, replacer);
-						return regexp_prefix + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s).replace(0, '');
+						return (regexp_prefix || '') + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s).replace(0, '');
 					}
 					s = regexp_suffix.replace(re, replacer);
-					return regexp_prefix + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s);
+					return (regexp_prefix || '') + '\x1c$' + (f1 ? s.replace(re2, replacer2) : s);
 				}
 				return m;
 			}, s = code.replace(/\\[\s\S]/g,
