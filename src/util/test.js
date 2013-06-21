@@ -20,7 +20,7 @@ define(function (require, exports) {
 			}
 		}
 	}, fail = function (name, notall, e) {
-		console.error(name || '', 'failed --> ', e);
+		console.error(name || '', 'failed --> ', e || '');
 		if (!notall) {
 			this.tested += 1;
 			if (this.tested === this.total) {
@@ -67,7 +67,7 @@ define(function (require, exports) {
 					}
 				} catch (e) {
 					cases.tested += 1;
-					console.error(p || '', 'failed --> ', e);
+					console.error(p || '', 'failed --> ', e || '');
 				}
 			}
 		}

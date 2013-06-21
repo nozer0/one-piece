@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-20 23:31
+ * Modified : 2013-06-21 23:12
  * Name     : util/assert.js
  */
 
@@ -48,14 +48,13 @@ define(function (require, exports, module) {
 		if (cfg) {
 			this.actual = cfg.actual;
 			this.expected = cfg.expected;
+			this.message = (this.message ? this.message + ', expected: ' : 'expected: ') + inspect(this.expected) + ', actual: ' + inspect(this.actual);
 		}
 		Error.call(this, msg);
 	}, deep;
 	AssertionError.prototype = new Error();
 	AssertionError.prototype.constructor = AssertionError;
-	AssertionError.prototype.toString = function () {
-		return (this.message ? this.message + ', expected: ' : 'expected: ') + inspect(this.expected) + ', actual: ' + inspect(this.actual);
-	};
+	AssertionError.prototype.toString = function () { return this.message; };
 	deep = function (actual, expected, matched, matched2) {
 		var t = typeof actual, i, l, p, o, o2;
 		if (t !== 'object') { return actual === expected; }
