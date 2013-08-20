@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-21 23:12
+ * Modified : 2013-08-19 22:51
  * Name     : util/assert.js
  */
 
@@ -42,7 +42,7 @@ define(function (require, exports, module) {
 			if (o.constructor === Date) { return o.toISOString(); }
 		}
 		return o;
-	}, AssertionError = exports.AssertionError = function (cfg) {
+	}, AssertionError = function (cfg) {
 		var msg = this.message = (cfg && cfg.message) || 'AssertionError';
 		this.name = 'AssertionError';
 		if (cfg) {
@@ -98,6 +98,14 @@ define(function (require, exports, module) {
 		return !l && actual.prototype === expected.prototype;
 	};
 	module.exports = {
+		/**
+		 * Extend error object inherits from `Error`.
+		 *
+		 * @param {object}  cfg     Configuration object, includes the options below.
+		 *  {string}    message     The error message string, default is 'AssertionError'.
+		 *  {*}         actual      The actual result object, required.
+		 *  {*}         expected    The expected result object, required.
+		 */
 		AssertionError : AssertionError,
 		ok             : function (guard, msg) {
 			if (!guard) {
@@ -105,11 +113,13 @@ define(function (require, exports, module) {
 			}
 		},
 		equal          : function (actual, expected, msg) {
+			//noinspection JSHint
 			if (actual != expected && (!actual || actual.constructor !== Date || String(actual) !== String(expected))) {
 				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}
 		},
 		notEqual       : function (actual, expected, msg) {
+			//noinspection JSHint
 			if (actual == expected || (actual && actual.constructor === Date && String(actual) === String(expected))) {
 				throw new AssertionError({message : msg, actual : actual, expected : expected});
 			}

@@ -142,7 +142,7 @@ define(function(require, exports, module) {
 		//log.level = 9;
 		require('util/test').run({
 			test : function () {
-				var ret = parser.precompile(code.value), deps = [], rets = {}, strs = ret.strings;
+				var ret = parser.compile(code.value), deps = [], rets = {}, strs = ret.strings;
 				code2.value = ret.s;
 				ret.s.replace(/([\w$]|\.\s*)?require\s*\(.*?(\d+)\s*\)/g, function (m, w$, n) {
 					var s;

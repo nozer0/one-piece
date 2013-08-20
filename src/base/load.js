@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-20 19:07
+ * Modified : 2013-08-19 01:28
  * Name     : base/load.js
  */
 
@@ -9,9 +9,16 @@
 define(function (require, exports) {
 	'use strict';
 
-	var global = define.global, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, exts = exports.exts = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType = exports.getType = function (uri) {
+	var global = define.global, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, extensions = exports.extensions = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType;
+
+	/**
+	 * Returns the type of file the passed url requests.
+	 *
+	 * @param {string}  uri     The URI string to be detected, required.
+	 */
+	getType = exports.getType = function (uri) {
 		var ext = re.exec(uri);
-		return (ext && exts[ext[1]]) || 'js';
+		return (ext && extensions[ext[1]]) || 'js';
 	};
 
 	function isSameHost(uri, host) {
@@ -24,54 +31,53 @@ define(function (require, exports) {
 	loaders = {
 		js  : (function () {
 			// IE8- || others, since 'load' is infrequently called, merge to make less codes is better than quicker
-			var t = doc.createElement('script'), un,
-				load = (t.onload === un || t.onerror !== un) ? function (node, uri, callback, ctx) {
-					// we can know if the js file is loaded or not, but can't know whether it's empty or invalid,
-					// ie8- triggers 'loading' and 'loaded' both normal without cache or error
-					// IE10:
-					//  loading - complete - loaded, complete (cache), loading - loaded (404)
-					// IE9-:
-					//  complete (cache), loading - loaded
-					// http://requirejs.org/docs/api.html#ieloadfail
-					var body = !exports.preserve && doc.body;
-					node.onload = node.onerror/* = node.onabort*/ = node.onreadystatechange = function (e) {
-						var rs = this.readyState;
-						if (!rs || rs === 'loaded' || rs === 'complete') {
-							this.onload = this.onerror/* = this.onabort*/ = this.onreadystatechange = null;
-							if (callback) {
-								callback.call(ctx, uri, rs || e.type === 'load', this, e || global.event);
-							}
-							if (body) {
-								body.removeChild(this);
-							}
-						}
-					};
-					node = null;
-				} : function (node, uri, callback, ctx) {    // opera12-
-					// although it supports both 'onload' and 'onreadystatechange',
-					// but it won't trigger anything if 404, empty or invalid file, use timer instead
-					var body = !exports.preserve && doc.body, timer = global.setTimeout(function () {
-						node.onload = null;
+			var t = doc.createElement('script'), un, load = (t.onload === un || t.onerror !== un) ? function (node, uri, callback, ctx) {
+				// we can know if the js file is loaded or not, but can't know whether it's empty or invalid,
+				// ie8- triggers 'loading' and 'loaded' both normal without cache or error
+				// IE10:
+				//  loading - complete - loaded, complete (cache), loading - loaded (404)
+				// IE9-:
+				//  complete (cache), loading - loaded
+				// http://requirejs.org/docs/api.html#ieloadfail
+				var body = !exports.preserve && doc.body;
+				node.onload = node.onerror/* = node.onabort*/ = node.onreadystatechange = function (e) {
+					var rs = this.readyState;
+					if (!rs || rs === 'loaded' || rs === 'complete') {
+						this.onload = this.onerror/* = this.onabort*/ = this.onreadystatechange = null;
 						if (callback) {
-							callback.call(ctx, uri, false, node);
-						}
-						if (body) {
-							body.removeChild(node);
-						}
-						node = null;
-					}, exports.timeout);
-					node.onload = function (e) {
-						this.onload = null;
-						global.clearTimeout(timer);
-						node = timer = null;
-						if (callback) {
-							callback.call(ctx, uri, true, this, e);
+							callback.call(ctx, uri, rs || e.type === 'load', this, e || global.event);
 						}
 						if (body) {
 							body.removeChild(this);
 						}
-					};
+					}
 				};
+				node = null;
+			} : function (node, uri, callback, ctx) {    // opera12-
+				// although it supports both 'onload' and 'onreadystatechange',
+				// but it won't trigger anything if 404, empty or invalid file, use timer instead
+				var body = !exports.preserve && doc.body, timer = global.setTimeout(function () {
+					node.onload = null;
+					if (callback) {
+						callback.call(ctx, uri, false, node);
+					}
+					if (body) {
+						body.removeChild(node);
+					}
+					node = null;
+				}, exports.timeout);
+				node.onload = function (e) {
+					this.onload = null;
+					global.clearTimeout(timer);
+					node = timer = null;
+					if (callback) {
+						callback.call(ctx, uri, true, this, e);
+					}
+					if (body) {
+						body.removeChild(this);
+					}
+				};
+			};
 			return function (uri, callback, ctx) {
 				var node = doc.createElement('script');
 				node.type = 'text/javascript';
@@ -97,7 +103,7 @@ define(function (require, exports) {
 					this.onload/* = this.onabort*/ = null;
 					try {
 						t = this.styleSheet.rules.length;
-					} catch (ingore) {}
+					} catch (ignore) {}
 					callback.call(ctx, uri, t, this, e || global.event);
 				};
 				node = null;
@@ -159,17 +165,39 @@ define(function (require, exports) {
 		}
 	};
 
+	/**
+	 * The timeout number of milliseconds, takes as failure if the load time is out of this number, default is 10 secs.
+	 * @type {int}
+	 */
 	exports.timeout = 10000;
-	exports.charset = 'utf8';
+
+	/**
+	 * The request charset, default is 'utf-8'.
+	 * @type {string}
+	 */
+	exports.charset = 'utf-8';
+
+	/**
+	 * Sets additional loader for special type.
+	 *
+	 * @param {string}      type    The type of file that loader function deals with, required.
+	 * @param {function}    loader  The loader function, which supports 3 arguments, `uri`, `callback` and `ctx`, required.
+	 */
 	exports.setLoader = function (type, loader) {
 		loaders[type] = loader;
 	};
 
-	// http://www.fantxi.com/blog/archives/preload-images-css-js
-	// https://developer.mozilla.org/en-US/docs/Link_prefetching_FAQ
+	/**
+	 * Unlike `load` function, `preload` does not affect current document.
+	 *
+	 * @param {string}  uri     The URI to be preloaded, required.
+	 * @param {string}  type    The type of file requested, if not set, it's detected from URI string.
+	 */
 	exports.preload = function (uri, type) {
+		// http://www.fantxi.com/blog/archives/preload-images-css-js
+		// https://developer.mozilla.org/en-US/docs/Link_prefetching_FAQ
 		var cfg = [], o, l, s, t;
-		// IE can't preload js&css via Image, and other browsers can't use cache via Image
+		// IE can't preload js and css via Image, and other browsers can't use cache via Image
 		if (typeof uri === 'string') {
 			t = type || getType(uri);
 			if (t === 'js' || t === 'css') {
@@ -221,6 +249,15 @@ define(function (require, exports) {
 		t.write('</body></html>');
 		t.close();
 	};
+
+	/**
+	 * Loads resources like scripts, stylesheets or images on runtime.
+	 *
+	 * @param {string}      uri         The URI to be loaded, required.
+	 * @param {string}      type        The type of file requested, if not set, it's detected from URI string.
+	 * @param {function}    callback    The callback function when load success or fail, takes `uri` and `result` as arguments.
+	 * @param {*}           ctx         The context object of `callback` function, default is `define.global`.
+	 */
 	exports.load = function (uri, type, callback, ctx) {
 		var t = typeof type;
 		if (t !== 'string') {
@@ -229,7 +266,7 @@ define(function (require, exports) {
 			type = getType(uri);
 		}
 		if (loaders[type]) {
-			loaders[type](uri, callback, ctx || define.context || global);
+			loaders[type](uri, callback, ctx || global);
 			return true;
 		}
 		return false;

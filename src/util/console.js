@@ -90,7 +90,9 @@ define(function (require, exports, module) {
 	};
 	//noinspection JSLint
 	for (p in console) {
+		//noinspection JSUnfilteredForInLoop
 		if (!exports.hasOwnProperty(p) && (console.hasOwnProperty ? console.hasOwnProperty(p) : true)) {
+			//noinspection JSUnfilteredForInLoop
 			exports[p] = console[p];
 		}
 	}

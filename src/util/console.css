@@ -45,7 +45,7 @@ body { margin: 0; padding: 0; }
 
 #console [name="warn"]:checked~* .warn { display: block; }
 
-#console .error { color: #f40; }
+#console .error { color: #f88; }
 
 #console [name="error"]:checked~.error { display: block; }
 

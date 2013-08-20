@@ -1,11 +1,11 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-22 00:50
+ * Modified : 2013-08-20 02:24
  * Name     : dom/event.js
  */
 
-/*global define, CustomEvent */
+/*global define */
 define(function (require, exports, module) {
 	'use strict';
 
@@ -38,7 +38,7 @@ define(function (require, exports, module) {
 			'MouseEvent'    : isNewGecko ? /click|mouse|menu/ : /drag|drop|click|[mM]ouse|menu/,
 			'KeyboardEvent' : /key/,
 			'UIEvent'       : /flow|Activate/
-			//'Event'            : /blur|focus|input|select|resize|scoll|change|submit|reset|copy|cut|paste|error|readystatechange|load/
+			//'Event'            : /blur|focus|input|select|resize|scroll|change|submit|reset|copy|cut|paste|error|readystatechange|load/
 		};
 		EventMaps = isTrident ? {'propertychange' : 'DOMAttrModified'} : {'activate' : 'DOMActivate'};
 		if (isGecko) {
@@ -65,15 +65,44 @@ define(function (require, exports, module) {
 			}
 		};
 		exports = module.exports = {
+			/**
+			 * Registers an event handler for the specified event on set node.
+			 *
+			 * @param {HTMLElement} node        The node object listen on, required.
+			 * @param {string}      name        The event name to be listened for, required.
+			 * @param {function}    listener    The listener function, required.
+			 * @param {boolean}     useCapture  Listens on the 'capturing' phase or not.
+			 */
 			addEventListener    : function (node, name, listener, useCapture) {
 				return node.addEventListener(name, listener, useCapture);
 			},
+
+			/**
+			 * Removes the event handler for the specified event from set node.
+			 *
+			 * @param {HTMLElement} node        The node object listen on, required.
+			 * @param {string}      name        The event name to be listened for, required.
+			 * @param {function}    listener    The listener function, required.
+			 * @param {boolean}     useCapture  This should be as same as set when `addEventListener` called.
+			 */
 			removeEventListener : function (node, name, listener, useCapture) {
 				return node.removeEventListener(name, listener, useCapture);   // useCapture MUST be same as set on 'addEventListener'
 			},
+
+			/**
+			 * Dispatches the event from the specified target node in the event object.
+			 *
+			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties.
+			 */
 			dispatchEvent       : function (e) {
 				return e.target.dispatchEvent(e instanceof Event ? e : exports.createEvent(e));
 			},
+
+			/**
+			 * Creates an Event object based on the set object.
+			 *
+			 * @param {object}  e   The plain object includes the event properties.
+			 */
 			createEvent         : newEvent ? function (e) {
 				var type = EventMaps[e.type] || e.type, p;
 				e.type = type;
@@ -89,6 +118,7 @@ define(function (require, exports, module) {
 							break;
 						}
 					}
+					//noinspection JSClosureCompilerSyntax
 					return new Event(type, e);
 				} catch (ignore) {}
 			} : function (e) {
@@ -113,9 +143,10 @@ define(function (require, exports, module) {
 					if (Events.KeyboardEvent.test(type)) {
 						event = doc.createEvent('KeyboardEvent');
 						if (isGecko) {
-							event.initKeyEvent(type, bubbles, cancelable, view, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.keyCode, e.charCode);
+							event.initKeyEvent(type, bubbles, cancelable, view, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.keyCode || (e.key && e.key.charCodeAt(0)) || 0, e.charCode || 0);
 						} else {
-							event.initKeyboardEvent(type, bubbles, cancelable, view, e.key, e.location, e.modifiers, e.repeat, e.locale);
+							//noinspection JSCheckFunctionSignatures
+							event.initKeyboardEvent(type, bubbles, cancelable, view, e.key, e.location, e.modifiers || [e.ctrlKey ? 'Control' : '', e.shiftKey ? 'Shift' : '', e.altKey ? 'Alt' : '', e.metaKey ? 'Meta' : '', e.altGraphKey ? 'AltGraph' : ''].join(' ').replace(/\s*/, ''), e.repeat, e.locale);
 						}
 						return event;
 					}
@@ -136,7 +167,7 @@ define(function (require, exports, module) {
 					}
 					if (Events.MutationEvent.test(type)) {
 						event = doc.createEvent('MutationEvent');
-						event.initUIEvent(type, bubbles, cancelable, e.relatedNode, e.prevValue, e.newValue, e.attrName, e.attrChange);
+						event.initMutationEvent(type, bubbles, cancelable, e.relatedNode, e.prevValue, e.newValue, e.attrName, e.attrChange);
 						return event;
 					}
 					if (Events.MessageEvent.test(type)) {
@@ -149,17 +180,19 @@ define(function (require, exports, module) {
 					return event;
 				} catch (ignore) {}
 			},
+
 			/**
-			 * Return a wrap event object which contains the origin event
-			 * @param {Event}   e   the origin event
+			 * Returns a wrapped event object which contains the origin event, to provide unique structure on different browsers.
+			 *
+			 * @param {Event}   e   The origin event object.
 			 */
 			getEvent            : function (e) //noinspection JSLint
 			{
 				var obj = {_origin : e}, p, re = /^[a-z]/;
-				//noinspection JSHint
 				for (p in e) {
 					//noinspection JSUnfilteredForInLoop
 					if (re.test(p) && typeof e[p] !== 'function') {
+						//noinspection JSUnfilteredForInLoop
 						obj[p] = e[p];
 					}
 				}
@@ -172,7 +205,7 @@ define(function (require, exports, module) {
 				if (p && p.nodeType !== 1) {
 					obj.relatedTarget = p.parentNode;
 				}
-				obj.button = e.which === 3 ? 2 : e.which;
+				obj.button = 3 === +e.which ? 2 : e.which;
 				obj.preventDefault = preventDefault;
 				obj.stopPropagation = stopPropagation;
 				if (!e.pageX || !e.screenX || e.screenY - e.screenX !== e.clientY - e.clientX) {    // IE9, or dispatch events on webkit
@@ -194,23 +227,52 @@ define(function (require, exports, module) {
 			}
 		};
 		exports = module.exports = {
+			/**
+			 * Registers an event handler for the specified event on set node.
+			 *
+			 * @param {HTMLElement} node        The node object listen on, required.
+			 * @param {string}      name        The event name to be listened for, required.
+			 * @param {function}    listener    The listener function, required.
+			 * @param {boolean}     useCapture  Listens on the 'capturing' phase or not.
+			 */
 			addEventListener    : function (node, name, listener, useCapture) {
 				node.attachEvent('on' + name, listener);
 				if (useCapture) {
 					node.setCapture();
 				}
 			},
+
+			/**
+			 * Removes the event handler for the specified event from set node.
+			 *
+			 * @param {HTMLElement} node        The node object listen on, required.
+			 * @param {string}      name        The event name to be listened for, required.
+			 * @param {function}    listener    The listener function, required.
+			 * @param {boolean}     useCapture  This should be as same as set when `addEventListener` called.
+			 */
 			removeEventListener : function (node, name, listener, useCapture) {
 				node.detachEvent('on' + name, listener);
 				if (useCapture) {
 					node.releaseCapture();
 				}
 			},
+
+			/**
+			 * Dispatches the event from the specified target node in the event object.
+			 *
+			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties.
+			 */
 			dispatchEvent       : function (e) {
-				// to be noticed, 'fireEvent' does not trigger default action like 'dispathEvent'
+				// to be noticed, 'fireEvent' does not trigger default action like 'dispatchEvent'
 				var target = e.srcElement || e.target;
 				target.fireEvent('on' + e.type, global.Event && e instanceof Event ? e : exports.createEvent(e));   // no 'Event' object in IE7-
 			},
+
+			/**
+			 * Creates an Event object based on the set object.
+			 *
+			 * @param {object}  e   The plain object includes the event properties.
+			 */
 			createEvent         : function (e) {
 				var event = doc.createEventObject(global.event), p;
 				for (p in e) {
@@ -220,9 +282,11 @@ define(function (require, exports, module) {
 				}
 				return event;
 			},
+
 			/**
-			 * Return a wrap event object which contains the origin event
-			 * @param {Event}   e   the origin event
+			 * Returns a wrapped event object which contains the origin event, to provide unique structure on different browsers.
+			 *
+			 * @param {Event}   e   The origin event object.
 			 */
 			getEvent            : function (e) //noinspection JSLint
 			{
@@ -232,12 +296,14 @@ define(function (require, exports, module) {
 				for (p in e) {
 					//noinspection JSUnfilteredForInLoop
 					if (re.test(p) && typeof e[p] !== 'function') {
+						//noinspection JSUnfilteredForInLoop
 						obj[p] = e[p];
 					}
 				}
 				obj._origin = e;
 				// properties are readonly in event
 				obj.target = e.srcElement;
+				//noinspection FallthroughInSwitchStatementJS
 				switch (e.type) {
 					case 'mouseover':
 						obj.relatedTarget = e.fromElement;

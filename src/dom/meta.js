@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-06-22 01:50
+ * Modified : 2013-06-21 19:18
  * Name     : dom/meta.js
  */
 
@@ -35,4 +35,5 @@ define(function (require, exports) {
 	}
 	exports.platform = nav.platform;
 	exports.language = (nav.language || nav.userLanguage || 'en').toLowerCase();
+	exports.navigator = ua;
 });

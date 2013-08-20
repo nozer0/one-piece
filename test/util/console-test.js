@@ -1,5 +1,4 @@
 /*global require */
-
 require('util/test').run({
 	name    : 'console',
 	testLog : function () {

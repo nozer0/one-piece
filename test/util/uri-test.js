@@ -1,5 +1,4 @@
 /*global require */
-
 var assert = require('util/assert'), uri = require('util/uri');
 require('util/test').run({
 	name          : 'uri',
