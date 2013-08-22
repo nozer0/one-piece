@@ -76,6 +76,9 @@ define(function (require) {
 		},
 		testShim     : function () {
 			assert.strictEqual(require('underscore').size({a : 1, b : 2, c : 3}), 3);
+		},
+		testText:function() {
+			//assert.strictEqual(require('./asset/test.txt'), 'something I want to show you. 你好');
 		}
 	});
 });

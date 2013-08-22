@@ -293,22 +293,22 @@ define(function (require, exports) {
 	}
 
 	function jsonpfail(/*uri, ret*/) {
-		if (!arguments[1]) { this.cfg.fail(); }
+		if (!arguments[1]) { this.cfg.onfail.call(this.cfg.context); }
 	}
 
 	function onreadystatechange() {
 		if (this.readyState === 4) {
 			if (this.status >= 200 && this.status < 300) {
 				var res = this.response || this.responseText;
-				this.cfg.success(typeof res === 'string' ? processResponse(res, this.cfg.type, this) : res);
+				this.cfg.onsuccess.call(this.cfg.context, typeof res === 'string' ? processResponse(res, this.cfg.type, this) : res);
 			} else {
-				this.cfg.fail(this.status);
+				this.cfg.onfail.call(this.cfg.context, this.status);
 			}
 		}
 	}
 
-	function fail() {
-		this.cfg.fail(this.status);
+	function onfail() {
+		this.cfg.onfail.call(this.cfg.context, this.status);
 	}
 
 	form2Req = FormData ? function (form) { // CH7+, FF4+, IE10+, OP12+, SA5+
@@ -331,7 +331,7 @@ define(function (require, exports) {
 			if (doc.readyState === 'complete' && ifm.readyState === 'complete') {
 				var document = ifm.contentWindow.document;
 				body.removeChild(ifm);
-				cfg.success(cfg.type === 'document' ? document : processResponse(document.body.innerHTML, cfg.type));
+				cfg.onsuccess(cfg.type === 'document' ? document : processResponse(document.body.innerHTML, cfg.type));
 			}
 		});
 		form.submit();
@@ -358,7 +358,7 @@ define(function (require, exports) {
 				body.removeChild(ifm);
 				body = ifm = null;
 			}
-			cfg.success(cfg.type === 'document' ? doc : processResponse(doc.body.innerHTML, cfg.type));
+			cfg.onsuccess.call(cfg.context, cfg.type === 'document' ? doc : processResponse(doc.body.innerHTML, cfg.type));
 		};
 		form.submit();
 		form.removeAttribute('target');
@@ -393,6 +393,7 @@ define(function (require, exports) {
 	 *  {string}            method              Request method, default is 'GET'.
 	 *  {string}            enctype             Request encoding type, one of 'application/x-www-form-urlencoded', 'text/plain', 'multipart/form-data'; if not set, use the `enctype` attribute of `form`; MUST be set to 'multipart/form-data' if file included.
 	 *  {string}            encoding            The request encoding.
+	 *  {*}                 context             The context object for callbacks such as `onsuccess` and `onfail`.
 	 *  {bool}              async               False if want synchronise request.
 	 *  {string}            username            The username used for authorization.
 	 *  {string}            password            The password used for authorization.
@@ -401,6 +402,8 @@ define(function (require, exports) {
 	 *  {int}               timeout             The number of milliseconds a request can take before automatically being terminated.
 	 *  {function}          onprogress          Download progress listener function.
 	 *  {function}          upload/onprogress   Upload progress listener function.
+	 *  {function}          onsuccess           Callback function when request successfully, takes `response` as it's argument.
+	 *  {function}          onfail              Callback function when request failed, takes `status` as it's argument.
 	 *
 	 * @returns {XMLHttpRequest}   Returns the xhr object itself.
 	 */
@@ -427,12 +430,12 @@ define(function (require, exports) {
 			xhr.cfg = cfg;
 			xhr.onreadystatechange = onreadystatechange;
 			xhr.onprogress = cfg.onprogress;
-			xhr.onerror = xhr.onabort = xhr.ontimeout = fail;
+			xhr.onerror = xhr.onabort = xhr.ontimeout = onfail;
 			p = cfg.upload;
 			t = xhr.upload;
 			if (p && t) {
 				t.onprogress = cfg.upload.onprogress;
-				t.onerror = t.onabort = fail;
+				t.onerror = t.onabort = onfail;
 			}
 
 			if (method === 'GET') {
@@ -490,7 +493,7 @@ define(function (require, exports) {
 				} catch (ignore) {
 					global[t] = undefined;
 				}
-				cfg.success(typeof res === 'string' ? processResponse(res, cfg.type) : res);
+				cfg.onsuccess.call(cfg.context, typeof res === 'string' ? processResponse(res, cfg.type) : res);
 			};
 			loader.load(p + (p.indexOf('?') > 0 ? '&' : '?') + 'jsonp=' + t + '&' + serialize(form ? getFormData(form) : data), 'js', jsonpfail, xhr);
 //			}

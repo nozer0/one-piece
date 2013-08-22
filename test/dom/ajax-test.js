@@ -8,10 +8,10 @@ define(function (require) {
 		},
 		testGet            : function () {
 			ajax.ajax({
-				url     : './ajax-test.php?method=GET',
-				name    : 'testGet',
-				method  : 'get',
-				success : function (res) {
+				url       : './ajax-test.php?method=GET',
+				name      : 'testGet',
+				method    : 'get',
+				onsuccess : function (res) {
 					try {
 						assert.equal(res, 'get response');
 						test.success(this.name);
@@ -19,17 +19,17 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
 		testPost           : function () {
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testPost',
-				method  : 'post',
-				data    : {n : 1, s : 'a', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testPost',
+				method    : 'post',
+				data      : {n : 1, s : 'a', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
+				onsuccess : function (res) {
 					try {
 						assert.equal(res, '{"n":1,"s":"a","d":"' + String(this.data.d) + '","o":{"x":1,"y":2},"arr":["a","b"],"fn":"aaa"}');
 						test.success(this.name);
@@ -37,19 +37,19 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
 		testArrayBuffer    : function () {
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testArrayBuffer',
-				method  : 'post',
-				data    : {type : 'arraybuffer'},
-				type    : 'arraybuffer',
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testArrayBuffer',
+				method    : 'post',
+				data      : {type : 'arraybuffer'},
+				type      : 'arraybuffer',
+				onsuccess : function (res) {
 					try {
 						var arr, i, l;
 						if (define.global.Uint8Array) {
@@ -63,18 +63,18 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
 		testBlob           : define.global.FileReader && function () {
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testBlob',
-				method  : 'post',
-				data    : {type : 'blob'},
-				type    : 'blob',
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testBlob',
+				method    : 'post',
+				data      : {type : 'blob'},
+				type      : 'blob',
+				onsuccess : function (res) {
 					var reader = new FileReader(), name = this.name;
 					reader.onloadend = function () {
 						try {
@@ -86,18 +86,18 @@ define(function (require) {
 					};
 					reader.readAsText(res);
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
 		testDocument       : function () {
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testDocument',
-				method  : 'post',
-				data    : {type : 'document'},
-				type    : 'document',
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testDocument',
+				method    : 'post',
+				data      : {type : 'document'},
+				type      : 'document',
+				onsuccess : function (res) {
 					try {
 						assert.equal(res.documentElement.innerHTML.replace('\r\n', '').toLowerCase(), '<head><title>document response</title></head><body></body>');
 						test.success(this.name);
@@ -105,18 +105,18 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
 		testJSON           : function () {
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testJSON',
-				method  : 'post',
-				data    : {type : 'json', n : 1, s : '啊', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
-				type    : 'json',
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testJSON',
+				method    : 'post',
+				data      : {type : 'json', n : 1, s : '啊', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
+				type      : 'json',
+				onsuccess : function (res) {
 					try {
 						assert.deepEqual(res, {type : 'json', n : 1, s : '啊', d : String(this.data.d), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : 'aaa'});
 						test.success(this.name);
@@ -124,18 +124,18 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
 		testFile           : Blob && function () {
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testFile',
-				method  : 'post',
-				enctype : 'multipart/form-data',
-				data    : {type : 'file', file : [new Blob(['Hey, guess who am I'], {type : 'text/plain'}), new Blob(['yes, nozer0'], {type : 'text/plain'})]},
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testFile',
+				method    : 'post',
+				enctype   : 'multipart/form-data',
+				data      : {type : 'file', file : [new Blob(['Hey, guess who am I'], {type : 'text/plain'}), new Blob(['yes, nozer0'], {type : 'text/plain'})]},
+				onsuccess : function (res) {
 					try {
 						assert.equal(res, 'Hey, guess who am I, yes, nozer0');
 						test.success(this.name);
@@ -143,7 +143,7 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
@@ -151,12 +151,12 @@ define(function (require) {
 			var doc = define.global.document, form = doc.createElement('form');
 			form.innerHTML = 'hidden:<input name="hidden" type="hidden" value="hidden"> disabled:<input name="disabled" disabled value="disabled"> unnamed:<input value="unnamed"> type:<input name="type" value="json"> <textarea name="s">啊</textarea> ' + 'chk[]:<input name="chk[]" type="checkbox" value="a" checked> <input name="chk[]" type="checkbox" value="b" checked> <input name="chk[]" type="checkbox" value="c"> radio:<input name="radio[]" type="radio" value="a"> <input name="radio[]" type="radio" value="b" checked> ' + 'overwrite: <input name="overwrite" value="overwrite"> <input name="overwrite" value="overwritten"> ' + '<select name="sel"><option value="Red" selected>红</option><option selected>绿</option></select> <select name="sel2[]" multiple><option value="Red" selected>红</option><option selected>绿</option></select>' + '<input name="submit" type="submit" value="submit"> <button name="reset">reset</button> ';
 			ajax.ajax({
-				url     : './ajax-test.php',
-				name    : 'testForm',
-				method  : 'post',
-				form    : form,
-				type    : 'json',
-				success : function (res) {
+				url       : './ajax-test.php',
+				name      : 'testForm',
+				method    : 'post',
+				form      : form,
+				type      : 'json',
+				onsuccess : function (res) {
 					try {
 						assert.deepEqual(res, {hidden : 'hidden', type : 'json', s : '啊', chk : ['a', 'b'], radio : ['b'], overwrite : 'overwritten', sel : '绿', sel2 : ['Red', '绿']});
 						test.success(this.name);
@@ -164,7 +164,7 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
@@ -174,12 +174,12 @@ define(function (require) {
 			input.value = 'something I want to show you. 你好';
 			form.onsubmit = function () {
 				ajax.ajax({
-					url     : './ajax-test.php',
-					name    : 'testFormWithFile',
-					method  : 'post',
-					form    : form,
-					enctype : 'multipart/form-data',
-					success : function (res) {
+					url       : './ajax-test.php',
+					name      : 'testFormWithFile',
+					method    : 'post',
+					form      : form,
+					enctype   : 'multipart/form-data',
+					onsuccess : function (res) {
 						try {
 							assert.equal(res, input.value);
 							test.success(this.name);
@@ -187,7 +187,7 @@ define(function (require) {
 							test.fail(this.name, null, ignore);
 						}
 					},
-					fail    : test.fail_callback
+					onfail    : test.fail_callback
 				});
 				return false;
 			};
@@ -198,11 +198,11 @@ define(function (require) {
 		testCross          : function () {
 			ajax.ajax({
 				// please replace 'www.nozer0.com' to your own server domain
-				url     : 'http://www.nozer0.com/one-piece/test/dom/ajax-test.php',
-				name    : 'testCross',
-				method  : 'post',
-				data    : {type : 'cross'},
-				success : function (res) {
+				url       : 'http://www.nozer0.com/one-piece/test/dom/ajax-test.php',
+				name      : 'testCross',
+				method    : 'post',
+				data      : {type : 'cross'},
+				onsuccess : function (res) {
 					try {
 						assert.equal(res, 'cross response');
 						test.success(this.name);
@@ -210,7 +210,7 @@ define(function (require) {
 						test.fail(this.name, null, ignore);
 					}
 				},
-				fail    : this.fail_callback
+				onfail    : this.fail_callback
 			});
 			return false;
 		},
@@ -225,12 +225,12 @@ define(function (require) {
 			form.appendChild(btn);
 			btn.onclick = function () {
 				ajax.ajax({
-					url     : './ajax-test.php',
-					name    : 'testUploadProgress',
-					method  : 'post',
-					form    : form,
-					enctype : 'multipart/form-data',
-					success : function (res) {
+					url       : './ajax-test.php',
+					name      : 'testUploadProgress',
+					method    : 'post',
+					form      : form,
+					enctype   : 'multipart/form-data',
+					onsuccess : function (res) {
 						try {
 							//assert.equal(res, '');
 							test.success(this.name);
@@ -238,8 +238,8 @@ define(function (require) {
 							test.fail(this.name, null, ignore);
 						}
 					},
-					fail    : test.fail_callback,
-					upload  : {
+					onfail    : test.fail_callback,
+					upload    : {
 						onprogress : function (e) {
 							bar.style.width = Math.ceil(e.loaded * 100 / e.total) + 'px';
 							bar.innerHTML = Math.ceil(e.loaded / e.total) + ':' + e.loaded + '/' + e.total;

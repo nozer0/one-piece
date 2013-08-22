@@ -65,7 +65,7 @@
 	 * @param {*}       definition      The definition function or object.
 	 */
 	define = global.define = function (id, dependencies, definition) {
-		var modules = define.modules, m, cfg;
+		var modules = define.modules, m, cfg, deps, o, i, l;
 //		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
 //			definition = id;
 //			dependencies = define.parse(definition.toString());
@@ -95,6 +95,17 @@
 		cfg = define.configModule;
 		if (!cfg || cfg.status === 4 || (cfg.dependencies && cfg.dependencies.hasOwnProperty(m.id))) {
 			define.resolveDependencies(m);
+		} else {
+			deps = cfg.dependencies;
+			o = m.ancestors;
+			if (deps && o) {
+				for (i = 0, l = o.length; i < l; i += 1) {
+					if (deps.hasOwnProperty(o[i])) {
+						define.resolveDependencies(m);
+						break;
+					}
+				}
+			}
 		}
 	};
 
@@ -200,11 +211,13 @@
 	function cyclic(modules, deps, ancestors) {
 		var p, i, l;
 		for (p in deps) {
+			//noinspection JSUnfilteredForInLoop
 			if (deps.hasOwnProperty(p) && !deps[p] && modules[p].status === 2) {
 				if (p === ancestors[0]) { return true; }    // got cyclic
 				for (i = 1, l = ancestors.length; i < l; i += 1) {
 					if (ancestors[i] === p) { return; } // inside cyclic
 				}
+				//noinspection JSUnfilteredForInLoop
 				if (cyclic(modules, modules[p].dependencies, ancestors.concat(p))) { return true; }
 			}
 		}
@@ -281,16 +294,18 @@
 		if (define.debug && define.log) {
 			define.log(module.id + ' complete');
 		}
+		module.status = 4;  // COMPLETE
 		if (t === 'function') {
 			require.main = module;
 			try {
 				definition.call(define.global, require, module.exports, module);
 				if (module.exports.constructor) { module.exports.constructor(); }
-				module.status = 4;  // COMPLETE
-			} catch (ignore) {}
+			} catch (e) {
+				module.status = -1; // FAILED
+				console.error(e);
+			}
 			delete require.main;
 		} else if (t === 'object') {
-			module.status = 4;  // COMPLETE
 			t = module.exports;
 			for (p in definition) {
 				if (definition.hasOwnProperty(p)) {
@@ -298,7 +313,7 @@
 				}
 			}
 		}
-		if (define.onComplete) {
+		if (module.status === 4 && define.onComplete) {
 			define.onComplete(module);
 		}
 		return module;
