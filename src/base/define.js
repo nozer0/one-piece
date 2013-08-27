@@ -83,7 +83,7 @@
 				if (typeof factory === 'function') {
 					m.factory = factory;
 					define.current_path = path;
-					factory.call(define.context, global.require, m.exports, m);
+					factory.call(define.global, global.require, m.exports, m);
 					if (m.exports.constructor) {
 						m.exports.constructor();
 					}
@@ -99,7 +99,7 @@
 				return m;
 			};
 			define.base = 'one-piece/src';
-			define.context = define.global = global;
+			define.global = global;
 			modules = define.modules = {};
 		}
 	}

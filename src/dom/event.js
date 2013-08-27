@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-08-20 02:24
+ * Modified : 2013-08-26 18:26
  * Name     : dom/event.js
  */
 
@@ -9,7 +9,7 @@
 define(function (require, exports, module) {
 	'use strict';
 
-	var global = define.global, isTrident = global.ActiveXObject !== undefined, isGecko = global.crypto !== undefined, isNewGecko = isGecko && global.crypto.alert === undefined, Event = global.Event, newEvent, doc = global.document, body = doc.body, html = doc.documentElement, stopPropagation, preventDefault, Events, EventMaps, KeyMaps, bubbles_re, cancelable_re;
+	var global = define.global, isTrident = global.ActiveXObject !== undefined, isGecko = global.crypto !== undefined, isNewGecko = isGecko && global.crypto.alert === undefined, Event = global.Event, newEvent, doc = global.document, body = doc.body, html = doc.documentElement, stopPropagation, preventDefault, Events, EventMaps, KeyMaps, bubbles_re, cancelable_re, createEvent, customizeListeners, onpropertychange, seed = 0;
 
 	if (doc.addEventListener) {
 		try {
@@ -41,9 +41,7 @@ define(function (require, exports, module) {
 			//'Event'            : /blur|focus|input|select|resize|scroll|change|submit|reset|copy|cut|paste|error|readystatechange|load/
 		};
 		EventMaps = isTrident ? {'propertychange' : 'DOMAttrModified'} : {'activate' : 'DOMActivate'};
-		if (isGecko) {
-			EventMaps.mousewheel = 'DOMMouseScroll';
-		}
+		if (isGecko) { EventMaps.mousewheel = 'DOMMouseScroll'; }
 		KeyMaps = {
 			3     : 13, // enter
 			63234 : 37, // left
@@ -60,9 +58,54 @@ define(function (require, exports, module) {
 		cancelable_re = isTrident ? /line|load|activate|input|focus|blur|change|enter|leave|move|out|Modified|Node|scroll|flow|resize/ : /line|load|input|focus|blur|change|enter|leave|move|out|Modified|Node|scroll|flow|resize/;
 		stopPropagation = function () { this._origin.stopPropagation(); };
 		preventDefault = function () {
-			if (this.cancelable) {
-				this._origin.preventDefault();
+			if (this.cancelable) { this._origin.preventDefault(); }
+		};
+		createEvent = function (e) {
+			var type = EventMaps[e.type] || e.type, bubbles = bubbles_re.test(type) ? false : e.bubbles !== false, cancelable = cancelable_re.test(type) ? false : e.cancelable !== false, view = e.view || global, detail = e.detail || 0, event;
+			//noinspection EmptyCatchBlockJS
+			try {
+				if (Events.DragEvent.test(type)) {
+					event = doc.createEvent('DragEvent');
+					event.initDragEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget, e.dataTransfer);
+				} else if (Events.MouseWheelEvent && Events.MouseWheelEvent.test(type)) {  // IE9+
+					event = doc.createEvent('MouseWheelEvent');
+					event.initMouseWheelEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.button || 0, e.relatedTarget, e.modifiers, e.wheelDelta);
+				} else if (Events.MouseEvent.test(type)) {
+					event = doc.createEvent('MouseEvent');
+					event.initMouseEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget);
+				} else if (Events.KeyboardEvent.test(type)) {
+					event = doc.createEvent('KeyboardEvent');
+					if (isGecko) {
+						event.initKeyEvent(type, bubbles, cancelable, view, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.keyCode || (e.key && e.key.charCodeAt(0)) || 0, e.charCode || 0);
+					} else {
+						//noinspection JSCheckFunctionSignatures
+						event.initKeyboardEvent(type, bubbles, cancelable, view, e.key, e.location, e.modifiers || [e.ctrlKey ? 'Control' : '', e.shiftKey ? 'Shift' : '', e.altKey ? 'Alt' : '', e.metaKey ? 'Meta' : '', e.altGraphKey ? 'AltGraph' : ''].join(' ').replace(/\s*/, ''), e.repeat, e.locale);
+					}
+				} else if (Events.FocusEvent && Events.FocusEvent.test(type)) {   //IE9+
+					event = doc.createEvent('FocusEvent');
+					event.initFocusEvent(type, bubbles, cancelable, view, detail, e.relatedTarget);
+				} else if (Events.WheelEvent && Events.WheelEvent.test(type)) {    //webkit
+					event = doc.createEvent('WheelEvent');
+					event.initUIEvent(type, bubbles, cancelable, view, detail);
+				} else if (Events.UIEvent.test(type)) {
+					event = doc.createEvent('UIEvent');
+					event.initUIEvent(type, bubbles, cancelable, view, detail);
+				} else if (Events.MutationEvent.test(type)) {
+					event = doc.createEvent('MutationEvent');
+					event.initMutationEvent(type, bubbles, cancelable, e.relatedNode, e.prevValue, e.newValue, e.attrName, e.attrChange);
+				} else if (Events.MessageEvent.test(type)) {
+					event = doc.createEvent('MessageEvent');
+					event.initMessageEvent(type, bubbles, cancelable, e.data, e.origin || global.location.protocol + "//" + global.location.host, e.lastEventId || '1', e.source || global, e.ports);
+				}
+			} catch (ignore) {}
+			if (!event) {
+				event = doc.createEvent('Event');
+				event.initEvent(type, bubbles, cancelable);
 			}
+			if (e.hasOwnProperty('userData')) {
+				event.userData = e.userData;
+			}
+			return event;
 		};
 		exports = module.exports = {
 			/**
@@ -73,7 +116,7 @@ define(function (require, exports, module) {
 			 * @param {function}    listener    The listener function, required.
 			 * @param {boolean}     useCapture  Listens on the 'capturing' phase or not.
 			 */
-			addEventListener    : function (node, name, listener, useCapture) {
+			addEventListener : function (node, name, listener, useCapture) {
 				return node.addEventListener(name, listener, useCapture);
 			},
 
@@ -94,7 +137,7 @@ define(function (require, exports, module) {
 			 *
 			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties.
 			 */
-			dispatchEvent       : function (e) {
+			dispatchEvent : function (e) {
 				return e.target.dispatchEvent(e instanceof Event ? e : exports.createEvent(e));
 			},
 
@@ -103,8 +146,8 @@ define(function (require, exports, module) {
 			 *
 			 * @param {object}  e   The plain object includes the event properties.
 			 */
-			createEvent         : newEvent ? function (e) {
-				var type = EventMaps[e.type] || e.type, p;
+			createEvent : newEvent ? function (e) {
+				var type = EventMaps[e.type] || e.type, p, event;
 				e.type = type;
 				e.bubbles = bubbles_re.test(type) ? false : e.bubbles !== false;
 				e.cancelable = cancelable_re.test(type) ? false : e.cancelable !== false;
@@ -113,80 +156,32 @@ define(function (require, exports, module) {
 					for (p in Events) {
 						if (Events.hasOwnProperty(p) && Events[p].test(type)) {
 							if (global.hasOwnProperty(p)) {
-								return new global[p](type, e);
+								event = new global[p](type, e);
+								if (e.hasOwnProperty('userData')) {
+									event.userData = e.userData;
+								}
+								return event;
 							}
 							break;
 						}
 					}
 					//noinspection JSClosureCompilerSyntax
-					return new Event(type, e);
-				} catch (ignore) {}
-			} : function (e) {
-				var type = EventMaps[e.type] || e.type, bubbles = bubbles_re.test(type) ? false : e.bubbles !== false, cancelable = cancelable_re.test(type) ? false : e.cancelable !== false, view = e.view || global, detail = e.detail || 0, event;
-				//noinspection EmptyCatchBlockJS
-				try {
-					if (Events.DragEvent.test(type)) {
-						event = doc.createEvent('DragEvent');
-						event.initDragEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget, e.dataTransfer);
-						return event;
+					event = new Event(type, e);
+					if (e.hasOwnProperty('userData')) {
+						event.userData = e.userData;
 					}
-					if (Events.MouseWheelEvent && Events.MouseWheelEvent.test(type)) {  // IE9+
-						event = doc.createEvent('MouseWheelEvent');
-						event.initMouseWheelEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.button || 0, e.relatedTarget, e.modifiers, e.wheelDelta);
-						return event;
-					}
-					if (Events.MouseEvent.test(type)) {
-						event = doc.createEvent('MouseEvent');
-						event.initMouseEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget);
-						return event;
-					}
-					if (Events.KeyboardEvent.test(type)) {
-						event = doc.createEvent('KeyboardEvent');
-						if (isGecko) {
-							event.initKeyEvent(type, bubbles, cancelable, view, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.keyCode || (e.key && e.key.charCodeAt(0)) || 0, e.charCode || 0);
-						} else {
-							//noinspection JSCheckFunctionSignatures
-							event.initKeyboardEvent(type, bubbles, cancelable, view, e.key, e.location, e.modifiers || [e.ctrlKey ? 'Control' : '', e.shiftKey ? 'Shift' : '', e.altKey ? 'Alt' : '', e.metaKey ? 'Meta' : '', e.altGraphKey ? 'AltGraph' : ''].join(' ').replace(/\s*/, ''), e.repeat, e.locale);
-						}
-						return event;
-					}
-					if (Events.FocusEvent && Events.FocusEvent.test(type)) {   //IE9+
-						event = doc.createEvent('FocusEvent');
-						event.initFocusEvent(type, bubbles, cancelable, view, detail, e.relatedTarget);
-						return event;
-					}
-					if (Events.WheelEvent && Events.WheelEvent.test(type)) {    //webkit
-						event = doc.createEvent('WheelEvent');
-						event.initUIEvent(type, bubbles, cancelable, view, detail);
-						return event;
-					}
-					if (Events.UIEvent.test(type)) {
-						event = doc.createEvent('UIEvent');
-						event.initUIEvent(type, bubbles, cancelable, view, detail);
-						return event;
-					}
-					if (Events.MutationEvent.test(type)) {
-						event = doc.createEvent('MutationEvent');
-						event.initMutationEvent(type, bubbles, cancelable, e.relatedNode, e.prevValue, e.newValue, e.attrName, e.attrChange);
-						return event;
-					}
-					if (Events.MessageEvent.test(type)) {
-						event = doc.createEvent('MessageEvent');
-						event.initMessageEvent(type, bubbles, cancelable, e.data, e.origin, e.lastEventId, e.source, e.ports);
-						return event;
-					}
-					event = doc.createEvent('Event');
-					event.initEvent(type, bubbles, cancelable);
 					return event;
-				} catch (ignore) {}
-			},
+				} catch (ignore) {
+					return createEvent(e);
+				}
+			} : createEvent,
 
 			/**
 			 * Returns a wrapped event object which contains the origin event, to provide unique structure on different browsers.
 			 *
 			 * @param {Event}   e   The origin event object.
 			 */
-			getEvent            : function (e) //noinspection JSLint
+			getEvent : function (e) //noinspection JSLint
 			{
 				var obj = {_origin : e}, p, re = /^[a-z]/;
 				for (p in e) {
@@ -226,6 +221,22 @@ define(function (require, exports, module) {
 				this.returnValue = this._origin.returnValue = false;
 			}
 		};
+		customizeListeners = {};
+		onpropertychange = function (e) {
+			e = e || global.event;
+			var target = e.target, expando = target.__expando, listeners, i, l;
+			if (expando) {
+				listeners = customizeListeners[expando];
+				if (listeners) {
+					listeners = listeners[e.expandoType];
+					if (listeners) {
+						for (e = exports.getEvent(e), i = 0, l = listeners.length; i < l; i += 1) {
+							listeners[i].call(target, e);
+						}
+					}
+				}
+			}
+		};
 		exports = module.exports = {
 			/**
 			 * Registers an event handler for the specified event on set node.
@@ -235,11 +246,24 @@ define(function (require, exports, module) {
 			 * @param {function}    listener    The listener function, required.
 			 * @param {boolean}     useCapture  Listens on the 'capturing' phase or not.
 			 */
-			addEventListener    : function (node, name, listener, useCapture) {
-				node.attachEvent('on' + name, listener);
-				if (useCapture) {
-					node.setCapture();
+			addEventListener : function (node, name, listener, useCapture) {
+				// IE8- don't support customize event, use `onpropertychange` instead
+				if (node['on' + name] === undefined) {
+					var expando = node.__expando, t, listeners;
+					if (!expando) {
+						expando = node.__expando = seed += 1;
+						node.attachEvent('onpropertychange', onpropertychange);
+					}
+					listeners = customizeListeners[expando] || (customizeListeners[expando] = {});
+					if (t = listeners[name]) {
+						t.push(listener);
+					} else {
+						listeners[name] = [listener];
+					}
+				} else {
+					node.attachEvent('on' + name, listener);
 				}
+				if (useCapture) { node.setCapture(); }
 			},
 
 			/**
@@ -251,10 +275,20 @@ define(function (require, exports, module) {
 			 * @param {boolean}     useCapture  This should be as same as set when `addEventListener` called.
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
-				node.detachEvent('on' + name, listener);
-				if (useCapture) {
-					node.releaseCapture();
+				if (node['on' + name] === undefined) {
+					var expando = node.__expando, listeners = expando && customizeListeners[expando], i, l;
+					if (listeners && (listeners = listeners[name])) {
+						for (i = 0, l = listeners.length; i < l; i += 1) {
+							if (listeners[i] === listener) {
+								listeners.splice(i, 1);
+								break;
+							}
+						}
+					}
+				} else {
+					node.detachEvent('on' + name, listener);
 				}
+				if (useCapture) { node.releaseCapture(); }
 			},
 
 			/**
@@ -262,10 +296,10 @@ define(function (require, exports, module) {
 			 *
 			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties.
 			 */
-			dispatchEvent       : function (e) {
+			dispatchEvent : function (e) {
 				// to be noticed, 'fireEvent' does not trigger default action like 'dispatchEvent'
 				var target = e.srcElement || e.target;
-				target.fireEvent('on' + e.type, global.Event && e instanceof Event ? e : exports.createEvent(e));   // no 'Event' object in IE7-
+				target.fireEvent(target['on' + e.type] === undefined ? 'onpropertychange' : 'on' + e.type, global.Event && e instanceof Event ? e : exports.createEvent(e));   // no 'Event' object in IE7-
 			},
 
 			/**
@@ -273,8 +307,13 @@ define(function (require, exports, module) {
 			 *
 			 * @param {object}  e   The plain object includes the event properties.
 			 */
-			createEvent         : function (e) {
-				var event = doc.createEventObject(global.event), p;
+			createEvent : function (e) {
+				var event = doc.createEventObject(global.event), p = e.target;
+				if (p['on' + e.type] === undefined) {
+					event.type = 'propertychange';
+					event.expandoType = e.type;
+					delete e.type;
+				}
 				for (p in e) {
 					if (e.hasOwnProperty(p)) {
 						event[p] = e[p];
@@ -288,10 +327,10 @@ define(function (require, exports, module) {
 			 *
 			 * @param {Event}   e   The origin event object.
 			 */
-			getEvent            : function (e) //noinspection JSLint
-			{
+			getEvent : function (e) {
 				var obj = {}, p, re = /^[a-z]/;
 				if (!e) { e = global.event; }
+				if (e._origin) { return e; }
 				//noinspection JSHint
 				for (p in e) {
 					//noinspection JSUnfilteredForInLoop
@@ -299,6 +338,9 @@ define(function (require, exports, module) {
 						//noinspection JSUnfilteredForInLoop
 						obj[p] = e[p];
 					}
+				}
+				if (e.expandoType) {
+					obj.type = e.expandoType;
 				}
 				obj._origin = e;
 				// properties are readonly in event

@@ -285,11 +285,43 @@
 	};
 
 	/**
+	 * Callback function when module is ready, to notify all ancestor modules recursively.
+	 *
+	 * @param {Module}  module  The module on the 'interactive' status, required.
+	 */
+	define.onReady = function (module) {
+		var ancestors = module.ancestors, m, l, id, onReady, modules;
+		delete module.wait;
+		module.status = 3;  // INTERACTIVE
+		if (define.debug && define.log) {
+			define.log(module.id + ' interactive');
+		}
+		if (ancestors) {
+			for (l = ancestors.length - 1, onReady = define.onReady, modules = define.modules, id = module.id; l >= 0; l -= 1) {
+				m = modules[ancestors[l]];
+				if (m.wait) {
+					m.dependencies[id] = true;
+					m.wait -= 1;
+					if (!m.wait) {
+						onReady(m);
+					}
+				}
+			}
+			delete module.ancestors;
+		} else {
+			setTimeout(function () {    // used to reduce function call stack number
+				define.execModule(module);
+			}, 0);
+		}
+	};
+
+	/**
 	 * Executes the module definition function, it's called when first `require` function runs.
 	 *
 	 * @param {Module}  module  The module to be executed, required.
 	 */
 	define.execModule = function (module) {
+		if (module.status === 4 || module.status === -1) { return; }
 		var definition = module.definition, t = typeof definition, p;
 		if (define.debug && define.log) {
 			define.log(module.id + ' complete');
@@ -317,35 +349,6 @@
 			define.onComplete(module);
 		}
 		return module;
-	};
-
-	/**
-	 * Callback function when module is ready, to notify all ancestor modules recursively.
-	 *
-	 * @param {Module}  module  The module on the 'interactive' status, required.
-	 */
-	define.onReady = function (module) {
-		var ancestors = module.ancestors, m, l, id, onReady, modules;
-		delete module.wait;
-		module.status = 3;  // INTERACTIVE
-		if (define.debug && define.log) {
-			define.log(module.id + ' interactive');
-		}
-		if (ancestors) {
-			for (l = ancestors.length - 1, onReady = define.onReady, modules = define.modules, id = module.id; l >= 0; l -= 1) {
-				m = modules[ancestors[l]];
-				if (m.wait) {
-					m.dependencies[id] = true;
-					m.wait -= 1;
-					if (!m.wait) {
-						onReady(m);
-					}
-				}
-			}
-			delete module.ancestors;
-		} else {
-			define.execModule(module);
-		}
 	};
 
 	/**

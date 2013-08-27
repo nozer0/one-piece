@@ -2,7 +2,7 @@
 define(function (require) {
 	var assert = require('util/assert'), AssertionError = assert.AssertionError, events = require('dom/event'), outer, inner, chkbox, input,
 		test = require('util/test').run({
-			setUp        : function () {
+			setUp              : function () {
 				var doc = document, body = doc.getElementsByTagName('body')[0];
 				outer = doc.createElement('div');
 //				outer.style.border = '1px solid #000';
@@ -19,7 +19,7 @@ define(function (require) {
 				outer.appendChild(inner);
 				body.insertBefore(outer, body.firstChild);
 			},
-			onClick      : function (e) {
+			onClick            : function (e) {
 				try {
 					e = events.getEvent(e);
 					assert.strictEqual(e.type, 'click', 'e.type');
@@ -30,16 +30,20 @@ define(function (require) {
 					test.fail('testDispatch', false, ignore);
 				}
 			},
-			testDispatch : function () {
+			testDispatch       : function () {
 				var onClick = this.onClick;
 				setTimeout(function () {
-					events.addEventListener(chkbox, 'click', onClick);
-					events.dispatchEvent({type : 'click', target : chkbox, clientX : 100, clientY : 100});
-					events.removeEventListener(chkbox, 'click', onClick);
+					try {
+						events.addEventListener(chkbox, 'click', onClick);
+						events.dispatchEvent({type : 'click', target : chkbox, clientX : 100, clientY : 100});
+						events.removeEventListener(chkbox, 'click', onClick);
+					} catch (ignore) {
+						test.fail('testDispatch', false, ignore);
+					}
 				}, 0);
 				return false;
 			},
-			testCapture  : function () {
+			testCapture        : function () {
 				var cnt = 0;
 
 				function onClick() {
@@ -57,7 +61,7 @@ define(function (require) {
 				events.dispatchEvent({type : 'click', target : chkbox});
 				assert.strictEqual(cnt, 3);
 			},
-			onChkbox     : function (e) {
+			onChkbox           : function (e) {
 				try {
 					e = events.getEvent(e);
 					assert.strictEqual(e.target, chkbox, 'e.target');
@@ -68,7 +72,7 @@ define(function (require) {
 					test.fail('testEvent', false, ignore);
 				}
 			},
-			onInner      : function (e) {
+			onInner            : function (e) {
 				try {
 					e = events.getEvent(e);
 					e.stopPropagation();
@@ -77,32 +81,78 @@ define(function (require) {
 					test.fail('testEvent', false, ignore);
 				}
 			},
-			onOuter      : function () {
+			onOuter            : function () {
 				test.fail('testEvent', null, 'e.stopPropagation not work');
 			},
-			testEvent    : function () {
+			testEvent          : function () {
+				var onChkbox = this.onChkbox, onInner = this.onInner, onOuter = this.onOuter;
 				outer.style.margin = '1000px 100px';
 				document.getElementsByTagName('body')[0].scrollIntoView(false); // avoid opera remember the scroll top
 				inner.scrollIntoView();
 				setTimeout(function () {
-					var t;
-
-					chkbox.checked = false;
-
-					events.addEventListener(chkbox, 'mousedown', this.onChkbox);
-					events.addEventListener(inner, 'mousedown', this.onInner);
-					events.addEventListener(outer, 'mousedown', this.onOuter);
-					events.dispatchEvent({type : 'mousedown', target : chkbox, clientX : 10, clientY : 10, button : 2});
-					events.removeEventListener(chkbox, 'mousedown', this.onChkbox);
-					events.removeEventListener(inner, 'mousedown', this.onInner);
-					events.removeEventListener(outer, 'mousedown', this.onOuter);
-					t = chkbox.checked;
-					if (t) {
-						test.fail('testEvent', false, new AssertionError({actual : t, expected : false, message : 'checked'}));
-					} else {
-						test.success('testEvent');
+					try {
+						var t;
+						chkbox.checked = false;
+						events.addEventListener(chkbox, 'mousedown', onChkbox);
+						events.addEventListener(inner, 'mousedown', onInner);
+						events.addEventListener(outer, 'mousedown', onOuter);
+						events.dispatchEvent({type : 'mousedown', target : chkbox, clientX : 10, clientY : 10, button : 2});
+						events.removeEventListener(chkbox, 'mousedown', onChkbox);
+						events.removeEventListener(inner, 'mousedown', onInner);
+						events.removeEventListener(outer, 'mousedown', onOuter);
+						t = chkbox.checked;
+						if (t) {
+							test.fail('testEvent', false, new AssertionError({actual : t, expected : false, message : 'checked'}));
+						} else {
+							test.success('testEvent');
+						}
+					} catch (ignore) {
+						test.fail('testEvent', false, ignore);
 					}
 				}, 300);
+				return false;
+			},
+			onMessage          : function (e) {
+				try {
+					e = events.getEvent(e);
+					assert.strictEqual(e.data, 'I am nozer0');
+					test.success('testMessage');
+				} catch (ignore) {
+					test.fail('testMessage', false, ignore);
+				}
+			},
+			testMessage        : function () {
+				var onMessage = this.onMessage;
+				setTimeout(function () {
+					try {
+						events.addEventListener(chkbox, 'message', onMessage);
+						events.dispatchEvent({type : 'message', target : chkbox, data : 'I am nozer0'});
+					} catch (ignore) {
+						test.fail('testMessage', false, ignore);
+					}
+				}, 0);
+				return false;
+			},
+			onXYZ              : function (e) {
+				try {
+					e = events.getEvent(e);
+					assert.strictEqual(e.type, 'xyz');
+					assert.deepEqual(e.userData, {x : 1, y : 2});
+					test.success('testCustomizeEvent');
+				} catch (ignore) {
+					test.fail('testCustomizeEvent', false, ignore);
+				}
+			},
+			testCustomizeEvent : function () {
+				var onXYZ = this.onXYZ;
+				setTimeout(function () {
+					try {
+						events.addEventListener(chkbox, 'xyz', onXYZ);
+						events.dispatchEvent({type : 'xyz', target : chkbox, userData : {x : 1, y : 2}});
+					} catch (ignore) {
+						test.fail('testCustomizeEvent', false, ignore);
+					}
+				}, 0);
 				return false;
 			}
 		});

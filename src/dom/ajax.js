@@ -292,7 +292,7 @@ define(function (require, exports) {
 		return res;
 	}
 
-	function jsonpfail(/*uri, ret*/) {
+	function onJSONPFail(/*uri, ret*/) {
 		if (!arguments[1]) { this.cfg.onfail.call(this.cfg.context); }
 	}
 
@@ -387,13 +387,13 @@ define(function (require, exports) {
 	 * Ajax wrapper function. Supports set a form element directly as sending data instead of normal data object, and each way support files included.
 	 *
 	 * @param {object}  cfg     Configuration object, includes the options below.
-	 *  {string}            url                 Request url, if not set, use the `action` attibute of `form`.
+	 *  {string}            url                 Request url, if not set, use the `action` attribute of `form`.
 	 *  {HTMLFormElement}   form                The form element to be sent.
 	 *  {object}            data                The data object or array to be sent.
 	 *  {string}            method              Request method, default is 'GET'.
 	 *  {string}            enctype             Request encoding type, one of 'application/x-www-form-urlencoded', 'text/plain', 'multipart/form-data'; if not set, use the `enctype` attribute of `form`; MUST be set to 'multipart/form-data' if file included.
 	 *  {string}            encoding            The request encoding.
-	 *  {*}                 context             The context object for callbacks such as `onsuccess` and `onfail`.
+	 *  {*}                 context             The context object for callbacks such as `onsuccess` and `onfail`, default is the `cfg` object itself.
 	 *  {bool}              async               False if want synchronise request.
 	 *  {string}            username            The username used for authorization.
 	 *  {string}            password            The password used for authorization.
@@ -418,6 +418,7 @@ define(function (require, exports) {
 			}
 		}
 		if (!cfg.url) { cfg.url = form.action; }
+		if (!cfg.context) { cfg.context = cfg; }
 		cross = isCrossDomain(cfg.url);
 		async = cfg.async !== false;
 		enctype = cfg.enctype || (cfg.enctype = form && form.enctype);
@@ -495,7 +496,7 @@ define(function (require, exports) {
 				}
 				cfg.onsuccess.call(cfg.context, typeof res === 'string' ? processResponse(res, cfg.type) : res);
 			};
-			loader.load(p + (p.indexOf('?') > 0 ? '&' : '?') + 'jsonp=' + t + '&' + serialize(form ? getFormData(form) : data), 'js', jsonpfail, xhr);
+			loader.load(p + (p.indexOf('?') > 0 ? '&' : '?') + 'jsonp=' + t + '&' + serialize(form ? getFormData(form) : data), 'js', onJSONPFail, xhr);
 //			}
 		}
 		return xhr;
