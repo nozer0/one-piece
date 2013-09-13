@@ -1,5 +1,6 @@
 /*global define */
 define(function (require) {
+	//noinspection JSUnusedGlobalSymbols
 	var assert = require('util/assert'), AssertionError = assert.AssertionError, events = require('dom/event'), outer, inner, chkbox, input,
 		test = require('util/test').run({
 			setUp              : function () {

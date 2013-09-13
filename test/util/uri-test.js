@@ -1,5 +1,6 @@
 /*global require */
 var assert = require('util/assert'), uri = require('util/uri');
+//noinspection JSUnusedGlobalSymbols
 require('util/test').run({
 	name          : 'uri',
 	setUp         : function () {

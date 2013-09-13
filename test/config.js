@@ -1,4 +1,5 @@
 /*global define */
+//noinspection SpellCheckingInspection
 define.config({
 	debug   : 0,
 	alias   : {'underscore' : 'http://underscorejs.org/underscore.js'},

@@ -51,6 +51,7 @@ define(function (require) {
 	var assert = require('util/assert');
 //	require('../src/require-shim'); // for safety, require again
 	require('./js/program');
+	//noinspection JSUnusedGlobalSymbols
 	require('util/test').run({
 		testNormal   : function () {
 			var css = define.getModule('./css/test.css', require.main), body = document.getElementsByTagName('body')[0];

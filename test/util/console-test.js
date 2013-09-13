@@ -1,4 +1,5 @@
 /*global require */
+//noinspection JSUnusedGlobalSymbols
 require('util/test').run({
 	name    : 'console',
 	testLog : function () {

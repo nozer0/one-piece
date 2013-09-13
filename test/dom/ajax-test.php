@@ -2,6 +2,7 @@
 header("Access-Control-Allow-Origin: *");
 $jsonp = isset($_GET['jsonp']) ? $_GET['jsonp'] : null;
 unset($_REQUEST['_jsonp']);
+$res = '';
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && (!$jsonp || isset($_GET['method']))) {
 	$res = 'get response';
 } else {

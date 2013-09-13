@@ -29,6 +29,7 @@ test = require('util/test').run({
 		return false;
 	},
 	testJs   : function () {
+		//noinspection SpellCheckingInspection
 		return this._test('testJs', {
 			'http://a.tbcdn.cn/s/kissy/1.1.6/kissy-min.js' : true,
 //			'http://static.paipaiimg.com/js/pp.noticeBoard.js' : true,
@@ -42,6 +43,7 @@ test = require('util/test').run({
 		});
 	},
 	testCss  : function () {
+		//noinspection SpellCheckingInspection
 		return this._test('testCss', {
 			'http://a.tbcdn.cn/p/global/1.0/global-min.css'          : true,
 			'https://ec264devtest.ihandbookstudio.net/css/reset.css' : true,
@@ -56,6 +58,7 @@ test = require('util/test').run({
 		});
 	},
 	testImg  : function () {
+		//noinspection SpellCheckingInspection
 		return this._test('testImg', {
 			'http://img02.taobaocdn.com/tps/i2/T1iQhUXnxpXXXXXXXX-171-48.png'   : true,
 			'https://ec264devtest.ihandbookstudio.net/img/login/login_logo.png' : true,

@@ -1,5 +1,6 @@
 /*global define */
 define(function (require) {
+	//noinspection JSUnresolvedVariable
 	var assert = require('util/assert'), ajax = require('dom/ajax'), Blob = define.global.Blob, test = require('util/test').run({
 		setUp              : function () {
 			this.fail_callback = function (status) {
@@ -52,6 +53,7 @@ define(function (require) {
 				onsuccess : function (res) {
 					try {
 						var arr, i, l;
+						//noinspection JSUnresolvedVariable
 						if (define.global.Uint8Array) {
 							for (arr = new Uint8Array(res), i = 0, l = arr.length, res = ''; i < l; i += 1) {
 								res += String.fromCharCode(arr[i]);
@@ -224,15 +226,15 @@ define(function (require) {
 			form.appendChild(bar);
 			form.appendChild(btn);
 			btn.onclick = function () {
+				//noinspection JSUnusedGlobalSymbols
 				ajax.ajax({
 					url       : './ajax-test.php',
 					name      : 'testUploadProgress',
 					method    : 'post',
 					form      : form,
 					enctype   : 'multipart/form-data',
-					onsuccess : function (res) {
+					onsuccess : function () {
 						try {
-							//assert.equal(res, '');
 							test.success(this.name);
 						} catch (ignore) {
 							test.fail(this.name, null, ignore);
@@ -253,7 +255,7 @@ define(function (require) {
 		},
 		testSync           : function () {
 			setTimeout(function () {
-				var sync;
+				var sync = false;
 				ajax.ajax({
 					url       : './ajax-test.php',
 					name      : 'testSync',

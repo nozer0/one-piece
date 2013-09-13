@@ -1,5 +1,6 @@
 /*global require */
 var assert = require('util/assert');
+//noinspection JSUnusedGlobalSymbols
 require('util/test').run({
 	name               : 'assert',
 	testOK             : function () {
