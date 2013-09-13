@@ -54,6 +54,7 @@ define(function (require, exports) {
 	exports.resolve = function (uri, base, maps) {
 		var s = uri, i, l, t;
 		if (typeof base === 'Object') {
+			//noinspection JSUnresolvedVariable
 			maps = base.maps;
 			base = base.base;
 		}
@@ -70,6 +71,7 @@ define(function (require, exports) {
 				}
 			}
 		}
+		//noinspection JSUnresolvedFunction
 		for (s = normalize(s), i = 0, t = maps ? maps.concat(_maps) : _maps, l = t.length; i < l; i += 1) {
 			s = s.replace(t[i], t[i += 1]);
 		}

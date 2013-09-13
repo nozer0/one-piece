@@ -56,6 +56,7 @@ define(function (require, exports) {
 			} : function (node, uri, callback, ctx) {    // opera12-
 				// although it supports both 'onload' and 'onreadystatechange',
 				// but it won't trigger anything if 404, empty or invalid file, use timer instead
+				//noinspection JSUnresolvedFunction
 				var body = !exports.preserve && doc.body, timer = global.setTimeout(function () {
 					node.onload = null;
 					if (callback) {
@@ -68,6 +69,7 @@ define(function (require, exports) {
 				}, exports.timeout);
 				node.onload = function (e) {
 					this.onload = null;
+					//noinspection JSUnresolvedFunction
 					global.clearTimeout(timer);
 					node = timer = null;
 					if (callback) {
@@ -111,6 +113,7 @@ define(function (require, exports) {
 				// ignore very old ff & webkit which don't trigger anything for all situations
 				var t = !ff && isSameHost(uri), timer;
 				if (node.onerror === undefined || global.opera) {   // opera won't trigger anything if 404
+					//noinspection JSUnresolvedFunction
 					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
@@ -120,11 +123,13 @@ define(function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
+						//noinspection JSUnresolvedFunction
 						global.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
 					// 'sheet.cssRules' is accessible only if same host, and ff always returns 0 for 'cssRules.length'
+					//noinspection JSUnresolvedVariable
 					callback.call(ctx, uri, e.type === 'load' && (!t || this.sheet.cssRules.length), this, e);
 				};
 			};
@@ -144,6 +149,7 @@ define(function (require, exports) {
 			if (callback) {
 				// opera12- supports 'onerror', but won't trigger if 404 from different host
 				if (global.opera && !isSameHost(uri)) {
+					//noinspection JSUnresolvedFunction
 					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, false, node);
@@ -153,6 +159,7 @@ define(function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
+						//noinspection JSUnresolvedFunction
 						global.clearTimeout(timer);
 						timer = null;
 					}

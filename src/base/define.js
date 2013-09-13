@@ -10,8 +10,10 @@
 (function (ctx) {
 	'use strict';
 
+	//noinspection JSUnresolvedVariable
 	var global = ctx || window, _define = global.define, doc = global.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, uri_re = /\/[^\/]+\/(.*?)(?:\.\w+)?(?:[?#].*)?$/, define, modules, normalize, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
 		try {
+			//noinspection JSUnresolvedFunction
 			this.__();
 		} catch (e) {
 			/*
@@ -32,6 +34,7 @@
 			 *
 			 * @see http://www.cnblogs.com/rubylouvre/archive/2013/01/23/2872618.html
 			 */
+			//noinspection JSUnresolvedVariable
 			var s = e.stack || e.stacktrace || (global.opera && e.message), ns, l, src;
 			if (s) {    // safari5- and IE6-9 not support
 				s = stack_re.exec(s);
@@ -50,10 +53,12 @@
 		}
 	} : function () { // ff 4+
 		// https://developer.mozilla.org/en-US/docs/DOM/document.currentScript
+		//noinspection JSUnresolvedVariable
 		var s = doc.currentScript;
 		return s ? s.src || s.baseURI : global.location && global.location.href;
 	};
 
+	//noinspection JSUnresolvedVariable
 	if (!(_define && typeof _define === 'function' && (_define.amd || _define.cmd))) {    // AMD or CMD
 		define = global.define = (global.module && typeof global.module.declare === 'function' && global.module.declare) || // CommonJS
 			(typeof global.require === 'function' && typeof global.exports === 'object' && function (factory) {   // NodeJS

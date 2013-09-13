@@ -9,6 +9,7 @@
 define(function (require, exports, module) {
 	'use strict';
 
+	//noinspection JSUnresolvedVariable
 	var global = define.global, isTrident = global.ActiveXObject !== undefined, isGecko = global.crypto !== undefined, isNewGecko = isGecko && global.crypto.alert === undefined, Event = global.Event, newEvent, doc = global.document, body = doc.body, html = doc.documentElement, stopPropagation, preventDefault, Events, EventMaps, KeyMaps, bubbles_re, cancelable_re, createEvent, customizeListeners, onpropertychange, seed = 0;
 
 	if (doc.addEventListener) {
@@ -62,13 +63,14 @@ define(function (require, exports, module) {
 		};
 		createEvent = function (e) {
 			var type = EventMaps[e.type] || e.type, bubbles = bubbles_re.test(type) ? false : e.bubbles !== false, cancelable = cancelable_re.test(type) ? false : e.cancelable !== false, view = e.view || global, detail = e.detail || 0, event;
-			//noinspection EmptyCatchBlockJS
 			try {
 				if (Events.DragEvent.test(type)) {
 					event = doc.createEvent('DragEvent');
+					//noinspection JSUnresolvedFunction,JSUnresolvedVariable
 					event.initDragEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget, e.dataTransfer);
 				} else if (Events.MouseWheelEvent && Events.MouseWheelEvent.test(type)) {  // IE9+
 					event = doc.createEvent('MouseWheelEvent');
+					//noinspection JSUnresolvedFunction
 					event.initMouseWheelEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.button || 0, e.relatedTarget, e.modifiers, e.wheelDelta);
 				} else if (Events.MouseEvent.test(type)) {
 					event = doc.createEvent('MouseEvent');
@@ -76,13 +78,15 @@ define(function (require, exports, module) {
 				} else if (Events.KeyboardEvent.test(type)) {
 					event = doc.createEvent('KeyboardEvent');
 					if (isGecko) {
+						//noinspection JSUnresolvedFunction
 						event.initKeyEvent(type, bubbles, cancelable, view, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.keyCode || (e.key && e.key.charCodeAt(0)) || 0, e.charCode || 0);
 					} else {
-						//noinspection JSCheckFunctionSignatures
+						//noinspection JSCheckFunctionSignatures,JSUnresolvedVariable
 						event.initKeyboardEvent(type, bubbles, cancelable, view, e.key, e.location, e.modifiers || [e.ctrlKey ? 'Control' : '', e.shiftKey ? 'Shift' : '', e.altKey ? 'Alt' : '', e.metaKey ? 'Meta' : '', e.altGraphKey ? 'AltGraph' : ''].join(' ').replace(/\s*/, ''), e.repeat, e.locale);
 					}
 				} else if (Events.FocusEvent && Events.FocusEvent.test(type)) {   //IE9+
 					event = doc.createEvent('FocusEvent');
+					//noinspection JSUnresolvedFunction
 					event.initFocusEvent(type, bubbles, cancelable, view, detail, e.relatedTarget);
 				} else if (Events.WheelEvent && Events.WheelEvent.test(type)) {    //webkit
 					event = doc.createEvent('WheelEvent');
@@ -95,6 +99,7 @@ define(function (require, exports, module) {
 					event.initMutationEvent(type, bubbles, cancelable, e.relatedNode, e.prevValue, e.newValue, e.attrName, e.attrChange);
 				} else if (Events.MessageEvent.test(type)) {
 					event = doc.createEvent('MessageEvent');
+					//noinspection JSUnresolvedFunction,JSUnresolvedVariable
 					event.initMessageEvent(type, bubbles, cancelable, e.data, e.origin || global.location.protocol + "//" + global.location.host, e.lastEventId || '1', e.source || global, e.ports);
 				}
 			} catch (ignore) {}
@@ -111,47 +116,68 @@ define(function (require, exports, module) {
 			/**
 			 * Registers an event handler for the specified event on set node.
 			 *
-			 * @param {HTMLElement} node        The node object listen on, required.
-			 * @param {string}      name        The event name to be listened for, required.
-			 * @param {function}    listener    The listener function, required.
-			 * @param {boolean}     useCapture  Listens on the 'capturing' phase or not.
+			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
+			 * @param {string|object}               name        Two formats of this argument, if 'string', the name of event to be listened for, required; or 'object' for multiple listeners, `{name1 : listener1, name2: listener2, ...}`, required.
+			 * @param {function}                    listener    The listener function, required.
+			 * @param {boolean}                     useCapture  Listens on the 'capturing' phase or not.
 			 */
 			addEventListener : function (node, name, listener, useCapture) {
-				return node.addEventListener(name, listener, useCapture);
+				var p;
+				if (typeof name === 'object') { // multiple listeners
+					for (p in name) {
+						if (name.hasOwnProperty(p)) {
+							node.addEventListener(p, name[p]);
+						}
+					}
+				} else {
+					node.addEventListener(name, listener, useCapture);
+				}
+				return this;
 			},
 
 			/**
 			 * Removes the event handler for the specified event from set node.
 			 *
-			 * @param {HTMLElement} node        The node object listen on, required.
-			 * @param {string}      name        The event name to be listened for, required.
-			 * @param {function}    listener    The listener function, required.
-			 * @param {boolean}     useCapture  This should be as same as set when `addEventListener` called.
+			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
+			 * @param {string}                      name        The name of event to be listened for, required.
+			 * @param {function}                    listener    The listener function, required.
+			 * @param {boolean}                     useCapture  This should be as same as set when `addEventListener` called.
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
-				return node.removeEventListener(name, listener, useCapture);   // useCapture MUST be same as set on 'addEventListener'
+				node.removeEventListener(name, listener, useCapture);   // useCapture MUST be same as set on 'addEventListener'
+				return this;
 			},
 
 			/**
 			 * Dispatches the event from the specified target node in the event object.
 			 *
-			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties.
+			 *
+			 * @param {object}          node    The node object dispatches the event, use `e.target` if ignored.
+			 * @param {string}          name    The name of event, use `e.type` if ignored.
+			 * @param {object|Event}    e       The event object to be dispatched, common `Event` object or plain object includes the event properties, required.
 			 */
-			dispatchEvent : function (e) {
-				return e.target.dispatchEvent(e instanceof Event ? e : exports.createEvent(e));
+			dispatchEvent : function (node, name, e) {
+				if (e) {
+					e.target = node;
+					e.type = name;
+				} else if (name) {
+					e = name;
+					e[typeof node === 'string' ? 'type' : 'target'] = node;
+				}
+				e.target.dispatchEvent(e instanceof Event ? e : exports.createEvent(e));
+				return this;
 			},
 
 			/**
 			 * Creates an Event object based on the set object.
 			 *
-			 * @param {object}  e   The plain object includes the event properties.
+			 * @param {object}  e   The plain object includes the event properties, required.
 			 */
 			createEvent : newEvent ? function (e) {
 				var type = EventMaps[e.type] || e.type, p, event;
 				e.type = type;
 				e.bubbles = bubbles_re.test(type) ? false : e.bubbles !== false;
 				e.cancelable = cancelable_re.test(type) ? false : e.cancelable !== false;
-				//noinspection EmptyCatchBlockJS
 				try {
 					for (p in Events) {
 						if (Events.hasOwnProperty(p) && Events[p].test(type)) {
@@ -196,7 +222,8 @@ define(function (require, exports, module) {
 				if (p.nodeType !== 1) { // old Safari
 					obj.target = p.parentNode;
 				}
-				p = e.relateTarget;
+				//noinspection JSUnresolvedVariable
+				p = e.relatedTarget;
 				if (p && p.nodeType !== 1) {
 					obj.relatedTarget = p.parentNode;
 				}
@@ -225,15 +252,9 @@ define(function (require, exports, module) {
 		onpropertychange = function (e) {
 			e = e || global.event;
 			var target = e.target, expando = target.__expando, listeners, i, l;
-			if (expando) {
-				listeners = customizeListeners[expando];
-				if (listeners) {
-					listeners = listeners[e.expandoType];
-					if (listeners) {
-						for (e = exports.getEvent(e), i = 0, l = listeners.length; i < l; i += 1) {
-							listeners[i].call(target, e);
-						}
-					}
+			if (expando && ( listeners = customizeListeners[expando]) && ( listeners = listeners[e.expandoType])) {
+				for (e = exports.getEvent(e), i = 0, l = listeners.length; i < l; i += 1) {
+					listeners[i].call(target, e);
 				}
 			}
 		};
@@ -241,22 +262,34 @@ define(function (require, exports, module) {
 			/**
 			 * Registers an event handler for the specified event on set node.
 			 *
-			 * @param {HTMLElement} node        The node object listen on, required.
-			 * @param {string}      name        The event name to be listened for, required.
-			 * @param {function}    listener    The listener function, required.
-			 * @param {boolean}     useCapture  Listens on the 'capturing' phase or not.
+			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
+			 * @param {string|object}               name        Two formats of this argument, if 'string', the name of event to be listened for, required; or 'object' for multiple listeners, `{name1 : listener1, name2: listener2, ...}`, required.
+			 * @param {function}                    listener    The listener function, required.
+			 * @param {boolean}                     useCapture  Listens on the 'capturing' phase or not, optional.
 			 */
 			addEventListener : function (node, name, listener, useCapture) {
+				var expando, p, listeners;
+				if (typeof name === 'object') { // multiple listeners
+					for (p in name) {
+						if (name.hasOwnProperty(p)) {
+							this.addEventListener(node, p, name[p], null);
+						}
+					}
+					return this;
+				}
 				// IE8- don't support customize event, use `onpropertychange` instead
 				if (node['on' + name] === undefined) {
-					var expando = node.__expando, t, listeners;
+					//noinspection JSUnresolvedVariable
+					expando = node.__expando;
 					if (!expando) {
+						//noinspection JSUndefinedPropertyAssignment
 						expando = node.__expando = seed += 1;
 						node.attachEvent('onpropertychange', onpropertychange);
 					}
 					listeners = customizeListeners[expando] || (customizeListeners[expando] = {});
-					if (t = listeners[name]) {
-						t.push(listener);
+					p = listeners[name];
+					if (p) {
+						p.push(listener);
 					} else {
 						listeners[name] = [listener];
 					}
@@ -264,20 +297,22 @@ define(function (require, exports, module) {
 					node.attachEvent('on' + name, listener);
 				}
 				if (useCapture) { node.setCapture(); }
+				return this;
 			},
 
 			/**
 			 * Removes the event handler for the specified event from set node.
 			 *
-			 * @param {HTMLElement} node        The node object listen on, required.
-			 * @param {string}      name        The event name to be listened for, required.
-			 * @param {function}    listener    The listener function, required.
-			 * @param {boolean}     useCapture  This should be as same as set when `addEventListener` called.
+			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
+			 * @param {string}                      name        The name of event to be listened for, required.
+			 * @param {function}                    listener    The listener function, required.
+			 * @param {boolean}                     useCapture  This should be as same as set when `addEventListener` called.
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
 				if (node['on' + name] === undefined) {
-					var expando = node.__expando, listeners = expando && customizeListeners[expando], i, l;
-					if (listeners && (listeners = listeners[name])) {
+					//noinspection JSUnresolvedVariable
+					var expando = node.__expando, listeners, i, l;
+					if (expando && (listeners = customizeListeners[expando]) && (listeners = listeners[name])) {
 						for (i = 0, l = listeners.length; i < l; i += 1) {
 							if (listeners[i] === listener) {
 								listeners.splice(i, 1);
@@ -294,7 +329,7 @@ define(function (require, exports, module) {
 			/**
 			 * Dispatches the event from the specified target node in the event object.
 			 *
-			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties.
+			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties, required.
 			 */
 			dispatchEvent : function (e) {
 				// to be noticed, 'fireEvent' does not trigger default action like 'dispatchEvent'
@@ -305,7 +340,7 @@ define(function (require, exports, module) {
 			/**
 			 * Creates an Event object based on the set object.
 			 *
-			 * @param {object}  e   The plain object includes the event properties.
+			 * @param {object}  e   The plain object includes the event properties, required.
 			 */
 			createEvent : function (e) {
 				var event = doc.createEventObject(global.event), p = e.target;
@@ -328,9 +363,10 @@ define(function (require, exports, module) {
 			 * @param {Event}   e   The origin event object.
 			 */
 			getEvent : function (e) {
-				var obj = {}, p, re = /^[a-z]/;
 				if (!e) { e = global.event; }
+				//noinspection JSUnresolvedVariable
 				if (e._origin) { return e; }
+				var obj = {}, p, re = /^[a-z]/;
 				//noinspection JSHint
 				for (p in e) {
 					//noinspection JSUnfilteredForInLoop
@@ -339,7 +375,9 @@ define(function (require, exports, module) {
 						obj[p] = e[p];
 					}
 				}
+				//noinspection JSUnresolvedVariable
 				if (e.expandoType) {
+					//noinspection JSUnresolvedVariable
 					obj.type = e.expandoType;
 				}
 				obj._origin = e;
@@ -371,4 +409,7 @@ define(function (require, exports, module) {
 			}
 		};
 	}
+	exports.on = exports.addEventListener;
+	exports.off = exports.removeEventListener;
+	exports.trigger = exports.dispatchEvent;
 });

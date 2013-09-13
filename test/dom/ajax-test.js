@@ -250,6 +250,27 @@ define(function (require) {
 				return false;
 			};
 			return false;
+		},
+		testSync           : function () {
+			setTimeout(function () {
+				var sync;
+				ajax.ajax({
+					url       : './ajax-test.php',
+					name      : 'testSync',
+					method    : 'post',
+					async     : false,
+					onsuccess : function () {
+						sync = true;
+					},
+					onfail    : this.fail_callback
+				});
+				try {
+					assert.strictEqual(sync, true);
+					test.success('testSync');
+				} catch (ignore) {
+					test.fail('testSync', null, ignore);
+				}
+			}, 500);
 		}
 	});
 });

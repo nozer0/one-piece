@@ -9,13 +9,16 @@
 define(function (require, exports) {
 	'use strict';
 
+	//noinspection JSUnresolvedVariable
 	var global = define.global, FormData = global.FormData, FileReader = global.FileReader, Blob = global.Blob, doc = global.document, global_cfg = {}, uri_re = /^(?:(\w+:)\/\/)?([^:\/]+:?[\d]*)/, domain_re = /\w+\.[a-z]+:?\d*$/i, getXHR = global.XMLHttpRequest ? function () {
 		return new XMLHttpRequest();
 	} : function () {  // IE8-
 		try {
+			//noinspection JSUnresolvedFunction
 			return new global.ActiveXObject('Msxml2.XMLHTTP');
 		} catch (ignore) {
 			try {
+				//noinspection JSUnresolvedFunction
 				return new global.ActiveXObject('Microsoft.XMLHTTP');
 			} catch (ignored) {}
 		}
@@ -30,6 +33,7 @@ define(function (require, exports) {
 	function isCrossDomain(url) {
 		var t = uri_re.exec(url), s;
 		if (!t || t[1] !== location.protocol) {
+			//noinspection JSHint
 			return /^[./\w]/.test(url) ? 0 : -1;
 		}
 		s = location.host;
@@ -129,7 +133,7 @@ define(function (require, exports) {
 				if (this[i] === needle) { return i; }
 			}
 			return -1;
-		}
+		};
 	}
 
 	function _serialize(obj, serializer, matched, ret, prefix) {
@@ -198,6 +202,7 @@ define(function (require, exports) {
 
 	function serializer4(name, value) {    // multipart/form-data after read file
 		var file = value.file;
+		//noinspection JSUnresolvedVariable
 		return 'Content-Disposition: form-data; name="' + name + '"; filename="' + (file.name || file.fileName) + '"\r\nContent-type: ' + file.type + ';\r\n\r\n' + value.content;
 	}
 
@@ -252,7 +257,9 @@ define(function (require, exports) {
 		var ifm, body, win, arr, i, l;
 		switch (type) {
 			case 'arraybuffer':
+				//noinspection JSUnresolvedVariable
 				if (xhr && xhr.responseBody) {  // IE7+
+					//noinspection JSUnresolvedVariable
 					res = xhr.responseBody;
 				} else if (global.Uint8Array) { // FF
 					for (i = 0, l = res.length, arr = new Uint8Array(l); i < l; i += 1) {
@@ -270,6 +277,7 @@ define(function (require, exports) {
 				win.document.write(res);
 				res = win.document;
 				if (res.readyState && res.readyState !== 'complete') {  // OP
+					//noinspection JSUnresolvedFunction
 					global.setTimeout(function () {
 						body.removeChild(ifm);
 						body = ifm = null;
@@ -284,6 +292,7 @@ define(function (require, exports) {
 					return JSON.parse(res);
 				} catch (ignore) {
 					try {
+						//noinspection JSHint
 						eval('res=' + res);
 					} catch (ignored) {}
 				}
@@ -350,6 +359,7 @@ define(function (require, exports) {
 		ifm.onload = function () {
 			var doc = ifm.contentDocument || ifm.contentWindow.document;
 			if (doc.readyState && doc.readyState !== 'complete') {  // OP
+				//noinspection JSUnresolvedFunction
 				global.setTimeout(function () {
 					body.removeChild(ifm);
 					body = ifm = null;
@@ -394,7 +404,7 @@ define(function (require, exports) {
 	 *  {string}            enctype             Request encoding type, one of 'application/x-www-form-urlencoded', 'text/plain', 'multipart/form-data'; if not set, use the `enctype` attribute of `form`; MUST be set to 'multipart/form-data' if file included.
 	 *  {string}            encoding            The request encoding.
 	 *  {*}                 context             The context object for callbacks such as `onsuccess` and `onfail`, default is the `cfg` object itself.
-	 *  {bool}              async               False if want synchronise request.
+	 *  {boolean}           async               False if want synchronise request.
 	 *  {string}            username            The username used for authorization.
 	 *  {string}            password            The password used for authorization.
 	 *  {object}            headers             Request headers.
@@ -445,15 +455,15 @@ define(function (require, exports) {
 				xhr.open(method, t ? p + (p.indexOf('?') > 0 ? '&' : '?') + serialize(t) : p, async, cfg.username, cfg.password);
 			} else {
 				xhr.open(method, cfg.url, async, cfg.username, cfg.password);
-				if (enctype === 'multipart/form-data') {
-					req = form ? form2Req(form, xhr) : data2Req(data, xhr);
-					if (!req) { reading = true; }
-				} else {
-					req = serialize(form ? getFormData(form) : data, enctype);
-					encoding = cfg.encoding || (cfg.encoding = form && form.encoding);
-					xhr.setRequestHeader('Content-Type', enctype + (encoding ? '; charset=' + encoding : ''));
-					xhr.send(req);
-					return;
+				if (form || data) {
+					if (enctype === 'multipart/form-data') {
+						req = form ? form2Req(form, xhr) : data2Req(data, xhr);
+						if (!req) { reading = true; }
+					} else {
+						req = serialize(form ? getFormData(form) : data, enctype);
+						encoding = cfg.encoding || (cfg.encoding = form && form.encoding);
+						xhr.setRequestHeader('Content-Type', enctype + (encoding ? '; charset=' + encoding : ''));
+					}
 				}
 			}
 
@@ -472,14 +482,12 @@ define(function (require, exports) {
 					} catch (ignore) {}
 				}
 				if (cfg.timeout) { xhr.timeout = cfg.timeout; }
-				if (cross) { xhr.withCredentials = true; }
+				// if (cross) { xhr.withCredentials = true; }
 			}
 			if ((cfg.type === 'xml') && xhr.overrideMimeType) {
 				xhr.overrideMimeType('text/xml');
 			}
-			if (!reading) {
-				xhr.send(req);
-			}
+			if (!reading) { xhr.send(req); }
 		} else {   // cross domain request but XHR doesn't support CORS yet
 			xhr = {cfg : cfg};
 			// jsonp if no file, form + iframe + hash
