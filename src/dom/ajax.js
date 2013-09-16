@@ -11,7 +11,8 @@ define(function (require, exports) {
 
 	//noinspection JSUnresolvedVariable
 	var global = define.global, FormData = global.FormData, FileReader = global.FileReader, Blob = global.Blob, doc = global.document, global_cfg = {}, uri_re = /^(?:(\w+:)\/\/)?([^:\/]+:?[\d]*)/, domain_re = /\w+\.[a-z]+:?\d*$/i, getXHR = global.XMLHttpRequest ? function () {
-		return new XMLHttpRequest();
+		//noinspection JSUnresolvedFunction
+		return new global.XMLHttpRequest();
 	} : function () {  // IE8-
 		try {
 			//noinspection JSUnresolvedFunction

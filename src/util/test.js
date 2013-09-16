@@ -60,11 +60,9 @@ define(function (require, exports) {
 		cases.finish = finish;
 		cases.total = cases.tested = cases.passed = 0;
 		for (p in cases) {
-			//noinspection JSUnfilteredForInLoop
-			if (cases.hasOwnProperty(p) && p.indexOf('test') === 0 && typeof cases[p] === 'function') {
+			if (cases.hasOwnProperty(p) && (p.indexOf('test') === 0 && typeof cases[p] === 'function')) {
 				cases.total += 1;
 				try {
-					//noinspection JSUnfilteredForInLoop
 					ret = cases[p]();
 					if (ret === false) {
 						async = true;

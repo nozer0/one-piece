@@ -219,13 +219,11 @@
 	function cyclic(modules, deps, ancestors) {
 		var p, i, l;
 		for (p in deps) {
-			//noinspection JSUnfilteredForInLoop
-			if (deps.hasOwnProperty(p) && !deps[p] && modules[p].status === 2) {
+			if (deps.hasOwnProperty(p) && (!deps[p] && modules[p].status === 2)) {
 				if (p === ancestors[0]) { return true; }    // got cyclic
 				for (i = 1, l = ancestors.length; i < l; i += 1) {
 					if (ancestors[i] === p) { return; } // inside cyclic
 				}
-				//noinspection JSUnfilteredForInLoop
 				if (cyclic(modules, modules[p].dependencies, ancestors.concat(p))) { return true; }
 			}
 		}
@@ -325,7 +323,7 @@
 			//noinspection JSUnresolvedVariable
 			delete module.ancestors;
 		} else {
-			setTimeout(function () {    // used to reduce function call stack number
+			global.setTimeout(function () {    // used to reduce function call stack number
 				define.execModule(module);
 			}, 0);
 		}

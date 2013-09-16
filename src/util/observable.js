@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-09-06 01:53
+ * Modified : 2013-09-15 09:19
  * Name     : util/observable.js
  */
 
@@ -67,15 +67,14 @@ define(function (require, exports) {
 	}
 
 	function trigger(name, e, blocking) {
-		console.info(name, e);
 		var expando, objs, observers, i, l;
 		if ((expando = this.__expando) && (objs = cache[expando])) {
-			if (typeof name === 'string') {
-				e.type = name;
-			} else {    // e, blocking
+			if (typeof name !== 'string') {    // e, blocking
 				blocking = e;
 				e = name;
 				name = e.type;
+			} else if (!e.type) {
+				e.type = name;
 			}
 			//e.target = this;
 			observers = objs[name] || [];
