@@ -27,8 +27,8 @@ define(function (require) {
 					assert.strictEqual(e.clientX, 100, 'e.clientX');
 					assert.strictEqual(e.clientY, 100, 'e.clientY');
 					test.success('testDispatch');
-				} catch (ignore) {
-					test.fail('testDispatch', false, ignore);
+				} catch (ex) {
+					test.fail('testDispatch', false, ex);
 				}
 			},
 			testDispatch       : function () {
@@ -38,8 +38,8 @@ define(function (require) {
 						events.addEventListener(chkbox, 'click', onClick);
 						events.dispatchEvent({type : 'click', target : chkbox, clientX : 100, clientY : 100});
 						events.removeEventListener(chkbox, 'click', onClick);
-					} catch (ignore) {
-						test.fail('testDispatch', false, ignore);
+					} catch (ex) {
+						test.fail('testDispatch', false, ex);
 					}
 				}, 0);
 				return false;
@@ -69,8 +69,8 @@ define(function (require) {
 					assert.strictEqual(e.button, 2, 'e.button');
 					assert.strictEqual(e.which, 3, 'e.which');
 					e.preventDefault();
-				} catch (ignore) {
-					test.fail('testEvent', false, ignore);
+				} catch (ex) {
+					test.fail('testEvent', false, ex);
 				}
 			},
 			onInner            : function (e) {
@@ -78,8 +78,8 @@ define(function (require) {
 					e = events.getEvent(e);
 					e.stopPropagation();
 					assert.strictEqual(e.pageY, 1040, 'e.pageY');
-				} catch (ignore) {
-					test.fail('testEvent', false, ignore);
+				} catch (ex) {
+					test.fail('testEvent', false, ex);
 				}
 			},
 			onOuter            : function () {
@@ -107,8 +107,8 @@ define(function (require) {
 						} else {
 							test.success('testEvent');
 						}
-					} catch (ignore) {
-						test.fail('testEvent', false, ignore);
+					} catch (ex) {
+						test.fail('testEvent', false, ex);
 					}
 				}, 300);
 				return false;
@@ -118,8 +118,8 @@ define(function (require) {
 					e = events.getEvent(e);
 					assert.strictEqual(e.data, 'I am nozer0');
 					test.success('testMessage');
-				} catch (ignore) {
-					test.fail('testMessage', false, ignore);
+				} catch (ex) {
+					test.fail('testMessage', false, ex);
 				}
 			},
 			testMessage        : function () {
@@ -128,8 +128,8 @@ define(function (require) {
 					try {
 						events.addEventListener(chkbox, 'message', onMessage);
 						events.dispatchEvent({type : 'message', target : chkbox, data : 'I am nozer0'});
-					} catch (ignore) {
-						test.fail('testMessage', false, ignore);
+					} catch (ex) {
+						test.fail('testMessage', false, ex);
 					}
 				}, 0);
 				return false;
@@ -140,8 +140,8 @@ define(function (require) {
 					assert.strictEqual(e.type, 'xyz');
 					assert.deepEqual(e.userData, {x : 1, y : 2});
 					test.success('testCustomizeEvent');
-				} catch (ignore) {
-					test.fail('testCustomizeEvent', false, ignore);
+				} catch (ex) {
+					test.fail('testCustomizeEvent', false, ex);
 				}
 			},
 			testCustomizeEvent : function () {
@@ -150,8 +150,8 @@ define(function (require) {
 					try {
 						events.addEventListener(chkbox, 'xyz', onXYZ);
 						events.dispatchEvent({type : 'xyz', target : chkbox, userData : {x : 1, y : 2}});
-					} catch (ignore) {
-						test.fail('testCustomizeEvent', false, ignore);
+					} catch (ex) {
+						test.fail('testCustomizeEvent', false, ex);
 					}
 				}, 0);
 				return false;

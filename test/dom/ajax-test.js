@@ -16,8 +16,8 @@ define(function (require) {
 					try {
 						assert.equal(res, 'get response');
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -34,8 +34,8 @@ define(function (require) {
 					try {
 						assert.equal(res, '{"n":1,"s":"a","d":"' + String(this.data.d) + '","o":{"x":1,"y":2},"arr":["a","b"],"fn":"aaa"}');
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -61,8 +61,8 @@ define(function (require) {
 						}
 						assert.equal(res, 'arraybuffer response');
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -82,8 +82,8 @@ define(function (require) {
 						try {
 							assert.equal(this.result, 'blob response');
 							test.success(name);
-						} catch (ignore) {
-							test.fail(name, null, ignore);
+						} catch (ex) {
+							test.fail(name, null, ex);
 						}
 					};
 					reader.readAsText(res);
@@ -103,8 +103,8 @@ define(function (require) {
 					try {
 						assert.equal(res.documentElement.innerHTML.replace('\r\n', '').toLowerCase(), '<head><title>document response</title></head><body></body>');
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -122,8 +122,8 @@ define(function (require) {
 					try {
 						assert.deepEqual(res, {type : 'json', n : 1, s : '啊', d : String(this.data.d), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : 'aaa'});
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -141,8 +141,8 @@ define(function (require) {
 					try {
 						assert.equal(res, 'Hey, guess who am I, yes, nozer0');
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -162,8 +162,8 @@ define(function (require) {
 					try {
 						assert.deepEqual(res, {hidden : 'hidden', type : 'json', s : '啊', chk : ['a', 'b'], radio : ['b'], overwrite : 'overwritten', sel : '绿', sel2 : ['Red', '绿']});
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -185,8 +185,8 @@ define(function (require) {
 						try {
 							assert.equal(res, input.value);
 							test.success(this.name);
-						} catch (ignore) {
-							test.fail(this.name, null, ignore);
+						} catch (ex) {
+							test.fail(this.name, null, ex);
 						}
 					},
 					onfail    : test.fail_callback
@@ -208,8 +208,8 @@ define(function (require) {
 					try {
 						assert.equal(res, 'cross response');
 						test.success(this.name);
-					} catch (ignore) {
-						test.fail(this.name, null, ignore);
+					} catch (ex) {
+						test.fail(this.name, null, ex);
 					}
 				},
 				onfail    : this.fail_callback
@@ -236,8 +236,8 @@ define(function (require) {
 					onsuccess : function () {
 						try {
 							test.success(this.name);
-						} catch (ignore) {
-							test.fail(this.name, null, ignore);
+						} catch (ex) {
+							test.fail(this.name, null, ex);
 						}
 					},
 					onfail    : test.fail_callback,
@@ -269,8 +269,8 @@ define(function (require) {
 				try {
 					assert.strictEqual(sync, true);
 					test.success('testSync');
-				} catch (ignore) {
-					test.fail('testSync', null, ignore);
+				} catch (ex) {
+					test.fail('testSync', null, ex);
 				}
 			}, 500);
 		}

@@ -11,7 +11,7 @@ define(function (require, exports) {
 	'use strict';
 
 	var console = define.modules.hasOwnProperty('util/console') ? require('util/console') : define.global.console || {log : 1, error : 1}, success = function (name, partial) {
-		console.info(name || '', 'passed');
+		console.info(name || '', ' passed');
 		if (!partial) {
 			this.passed += 1;
 			this.tested += 1;
@@ -20,7 +20,7 @@ define(function (require, exports) {
 			}
 		}
 	}, fail = function (name, partial, e) {
-		console.error(name || '', 'failed --> ', e || '');
+		console.error(name || '', ' failed --> ', e || '');
 		if (!partial) {
 			this.tested += 1;
 			if (this.tested === this.total) {

@@ -20,14 +20,10 @@ body { margin: 0; padding: 0; }
 	font: 15px sans-serif;
 	margin: 15px 0;
 	display: none;
-	display: block\0;    /* IE8- doesn't recognise the :checked selector */
+	display: block\0; /* IE8-, Opera11- doesn't recognise the :checked selector */
 }
 
-@media all and (monochrome:0) { /* reset IE9+ */
-	#console p {
-		display: none\9;
-	}
-}
+:root #console p { display: none\9; }   /* reset IE9+ */
 
 #console [name="log"]:checked~.log { display: block; }
 

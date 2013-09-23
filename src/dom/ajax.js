@@ -302,8 +302,9 @@ define(function (require, exports) {
 		return res;
 	}
 
-	function onJSONPFail(/*uri, ret*/) {
-		if (!arguments[1]) { this.cfg.onfail.call(this.cfg.context); }
+	//noinspection JSUnusedLocalSymbols
+	function onJSONPFail(uri, ret) {
+		if (!ret) { this.cfg.onfail.call(this.cfg.context); }
 	}
 
 	function onreadystatechange() {

@@ -10,16 +10,16 @@ define(function (require) {
 					if (e.type === 'trigger') {
 						test.success('testTrigger');
 					}
-				} catch (ignore) {
-					test.fail('testTrigger', false, ignore);
+				} catch (ex) {
+					test.fail('testTrigger', false, ex);
 				}
 			},
 			onTriggerX          : function (e) {
 				try {
 					assert.strictEqual(e.type, 'trigger:x', 'e.type');
 					assert.strictEqual(e.x, 3, 'e.x');
-				} catch (ignore) {
-					test.fail('testTrigger', false, ignore);
+				} catch (ex) {
+					test.fail('testTrigger', false, ex);
 				}
 			},
 			testTrigger         : function () {
@@ -50,8 +50,8 @@ define(function (require) {
 				try {
 					assert.strictEqual(e.type, 'update:x', 'e.type');
 					assert.strictEqual(e.x, 3, 'e.x');
-				} catch (ignore) {
-					test.fail('testObservable', false, ignore);
+				} catch (ex) {
+					test.fail('testObservable', false, ex);
 				}
 			},
 			onUpdate            : function (e) {
@@ -59,8 +59,8 @@ define(function (require) {
 					assert.strictEqual(e.type, 'update:x', 'e.type');
 					assert.strictEqual(e.x, 3, 'e.x');
 					test.success('testObservable');
-				} catch (ignore) {
-					test.fail('testObservable', false, ignore);
+				} catch (ex) {
+					test.fail('testObservable', false, ex);
 				}
 			},
 			testObservable      : function () {
@@ -81,8 +81,8 @@ define(function (require) {
 					this.reset();
 					assert.strictEqual(this.x, 1, 'reset this.x');
 					test.success('testSettable');
-				} catch (ignore) {
-					test.fail('testSettable', false, ignore);
+				} catch (ex) {
+					test.fail('testSettable', false, ex);
 				}
 			},
 			testSettable        : function () {

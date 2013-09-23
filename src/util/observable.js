@@ -61,7 +61,9 @@ define(function (require, exports) {
 			for (var i = 0, l = observers.length; i < l; i += 1) {
 				try {
 					if (observers[i].call(ctx, e) === false) { return false; }
-				} catch (ignore) {}
+				} catch (ex) {
+					if (console && console.error) { console.error(ex); }
+				}
 			}
 		}, 0);
 	}
@@ -90,7 +92,9 @@ define(function (require, exports) {
 					for (i = 0; i < l; i += 1) {
 						try {
 							if (observers[i].call(this, e) === false) { return false; }
-						} catch (ignore) {}
+						} catch (ex) {
+							if (console && console.error) { console.error(ex); }
+						}
 					}
 				} else {
 					observe(observers, e, this);
