@@ -350,7 +350,9 @@
 				if (module.exports.constructor) { module.exports.constructor(); }
 			} catch (e) {
 				module.status = -1; // FAILED
-				console.error(e);
+				if (global.console && global.console.error) {
+					global.console.error(e);
+				}
 			}
 			delete require.main;
 		} else if (t === 'object') {
@@ -1008,13 +1010,24 @@ define('util/console', [], function (require, exports, module) {
 
 	define.parse = function (s) {
 		var ret = compile(s), deps = [], rets = {}, strs = ret.strings;
-		ret.s.replace(/([\w$]|\.\s*)?require\s*\(.*?(\d+)\s*\)/g, function (m, w$, n) {
-			var s;
+		ret.s.replace(/([\w$]|\.\s*)?require\s*\(\s*(.*?)\s*\)/g, function (m, w$, expr) {
+			var s, t, n;
 			if (!w$) {
-				s = strs[n - 1].replace(/^['"]\s*|\s*['"]$/g, '');
-				if (!rets.hasOwnProperty(s)) {
-					rets[s] = true;
-					deps.push(s);
+				t = /^\x1c@(\d+)$/.exec(expr);
+				if (t) {
+					n = t[1];
+				} else {
+					try {
+						//noinspection JSHint
+						n = eval(expr.replace(/\x1c@/g, ''));
+					} catch (ignore) {}
+				}
+				if (n) {
+					s = strs[n - 1].replace(/^['"]\s*|\s*['"]$/g, '');
+					if (!rets.hasOwnProperty(s)) {
+						rets[s] = true;
+						deps.push(s);
+					}
 				}
 			}
 			return '';

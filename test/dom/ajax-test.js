@@ -2,6 +2,7 @@
 define(function (require) {
 	//noinspection JSUnresolvedVariable
 	var assert = require('util/assert'), ajax = require('dom/ajax'), Blob = define.global.Blob, test = require('util/test').run({
+		name               : 'ajax',
 		setUp              : function () {
 			this.fail_callback = function (status) {
 				test.fail(this.name, null, status);

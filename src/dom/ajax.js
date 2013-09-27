@@ -310,7 +310,7 @@ define(function (require, exports) {
 	function onreadystatechange() {
 		if (this.readyState === 4) {
 			if (this.status >= 200 && this.status < 300) {
-				var res = this.response || this.responseText;
+				var res = this.response || this.hasOwnProperty('responseText') && this.responseText;
 				this.cfg.onsuccess.call(this.cfg.context, typeof res === 'string' ? processResponse(res, this.cfg.type, this) : res);
 			} else {
 				this.cfg.onfail.call(this.cfg.context, this.status);
@@ -412,6 +412,7 @@ define(function (require, exports) {
 	 *  {object}            headers             Request headers.
 	 *  {string}            type                Request type, one of 'text', 'json', 'arraybuffer', 'blob' and 'document', returns the response object with set request type, default is 'text'.
 	 *  {int}               timeout             The number of milliseconds a request can take before automatically being terminated.
+	 *  {boolean}           cacheable           Whether the request is cacheable or not, default is false.
 	 *  {function}          onprogress          Download progress listener function.
 	 *  {function}          upload/onprogress   Upload progress listener function.
 	 *  {function}          onsuccess           Callback function when request successfully, takes `response` as it's argument.
@@ -422,14 +423,17 @@ define(function (require, exports) {
 	exports.ajax = function (cfg) {
 		// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
 		if (!cfg) { return; }
-		var xhr, cross, async, enctype, method, encoding, form = cfg.form, data = cfg.data, req, p, t, reading;
+		var xhr, cross, async, enctype, method, encoding, form = cfg.form, data = cfg.data, req, url, p, t, reading;
 		if (!cfg.url && (!form || !form.action)) { return; }
 		for (p in global_cfg) {
 			if (global_cfg.hasOwnProperty(p) && !cfg.hasOwnProperty(p)) {
 				cfg[p] = global_cfg[p];
 			}
 		}
-		if (!cfg.url) { cfg.url = form.action; }
+		url = cfg.url || (cfg.url = form.action);
+		if (!cfg.cacheable) {
+			url += (url.indexOf('?') > 0 ? '&' : '?') + Date.now() + (cnt += 1);
+		}
 		if (!cfg.context) { cfg.context = cfg; }
 		cross = isCrossDomain(cfg.url);
 		async = cfg.async !== false;
@@ -453,10 +457,9 @@ define(function (require, exports) {
 
 			if (method === 'GET') {
 				t = form ? getFormData(form) : data;
-				p = cfg.url;
-				xhr.open(method, t ? p + (p.indexOf('?') > 0 ? '&' : '?') + serialize(t) : p, async, cfg.username, cfg.password);
+				xhr.open(method, t ? url + (url.indexOf('?') > 0 ? '&' : '?') + serialize(t) : url, async, cfg.username, cfg.password);
 			} else {
-				xhr.open(method, cfg.url, async, cfg.username, cfg.password);
+				xhr.open(method, url, async, cfg.username, cfg.password);
 				if (form || data) {
 					if (enctype === 'multipart/form-data') {
 						req = form ? form2Req(form, xhr) : data2Req(data, xhr);
@@ -495,7 +498,6 @@ define(function (require, exports) {
 			// jsonp if no file, form + iframe + hash
 //			if (enctype === 'multipart/form-data') {
 //			} else {
-			p = cfg.url;
 			cnt += 1;
 			t = xhr.jsonp = '__jsonp' + cnt;
 			global[t] = function (res) {
@@ -506,7 +508,7 @@ define(function (require, exports) {
 				}
 				cfg.onsuccess.call(cfg.context, typeof res === 'string' ? processResponse(res, cfg.type) : res);
 			};
-			loader.load(p + (p.indexOf('?') > 0 ? '&' : '?') + 'jsonp=' + t + '&' + serialize(form ? getFormData(form) : data), 'js', onJSONPFail, xhr);
+			loader.load(url + (url.indexOf('?') > 0 ? '&' : '?') + 'jsonp=' + t + '&' + serialize(form ? getFormData(form) : data), 'js', onJSONPFail, xhr);
 //			}
 		}
 		return xhr;

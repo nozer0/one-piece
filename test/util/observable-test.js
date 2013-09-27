@@ -3,6 +3,7 @@ define(function (require) {
 	//noinspection JSUnusedGlobalSymbols
 	var assert = require('util/assert'), observable = require('util/observable'),
 		test = require('util/test').run({
+			name                : 'observable',
 			onTrigger           : function (e) {
 				try {
 					assert.strictEqual(this.x, 1, 'this.x');

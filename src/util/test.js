@@ -10,7 +10,7 @@
 define(function (require, exports) {
 	'use strict';
 
-	var console = define.modules.hasOwnProperty('util/console') ? require('util/console') : define.global.console || {log : 1, error : 1}, success = function (name, partial) {
+	var g_console = define.global.console, console = define.modules.hasOwnProperty('util/console') ? require('util/console') : g_console || {log : 1, error : 1}, success = function (name, partial) {
 		console.info(name || '', ' passed');
 		if (!partial) {
 			this.passed += 1;
@@ -20,6 +20,9 @@ define(function (require, exports) {
 			}
 		}
 	}, fail = function (name, partial, e) {
+		if (g_console && console !== g_console && g_console.error) {
+			g_console.error(e);
+		}
 		console.error(name || '', ' failed --> ', e || '');
 		if (!partial) {
 			this.tested += 1;
@@ -73,6 +76,9 @@ define(function (require, exports) {
 					}
 				} catch (e) {
 					cases.tested += 1;
+					if (g_console && console !== g_console && g_console.error) {
+						g_console.error(e);
+					}
 					console.error(p || '', 'failed --> ', e || '');
 				}
 			}

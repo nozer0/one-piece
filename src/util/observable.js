@@ -75,10 +75,7 @@ define(function (require, exports) {
 				blocking = e;
 				e = name;
 				name = e.type;
-			} else if (!e.type) {
-				e.type = name;
 			}
-			//e.target = this;
 			observers = objs[name] || [];
 			// if the set type is like 'xxx:yyy', notifies the observers of 'xxx' event too
 			i = name.indexOf(':');
@@ -87,6 +84,12 @@ define(function (require, exports) {
 			}
 			l = observers.length;
 			if (l) {
+				if (!e.type) { e.type = name; }
+				if (!e.target) {
+					try {
+						e.target = this;
+					} catch (ignore) {}
+				}
 				if (blocking) {
 					// do not use `setTimeout` to simulate asynchronization because predict triggers are needed sometimes
 					for (i = 0; i < l; i += 1) {
