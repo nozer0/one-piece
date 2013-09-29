@@ -9,10 +9,8 @@
 (function (ctx) {
 	'use strict';
 
-	//noinspection JSUnresolvedVariable
 	var global = ctx || window, doc = global.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
 		try {
-			//noinspection JSUnresolvedFunction
 			this.__();
 		} catch (e) {
 			/*
@@ -33,7 +31,6 @@
 			 *
 			 * @see http://www.cnblogs.com/rubylouvre/archive/2013/01/23/2872618.html
 			 */
-			//noinspection JSUnresolvedVariable
 			var s = e.stack || e.stacktrace || (global.opera && e.message), ns, l, src;
 			if (s) {    // safari5- and IE6-9 not support
 				s = stack_re.exec(s);
@@ -43,6 +40,7 @@
 					s = ns[l -= 1];
 					if (s.readyState === 'interactive') {
 						// for IE8-, 's.src' won't return full url, in contract, IE8+ can only get full rul via 's.src'
+						//noinspection JSCheckFunctionSignatures
 						src = doc.querySelector ? s.src : s.getAttribute('src', 4);
 						break;
 					}
@@ -52,7 +50,6 @@
 		}
 	} : function () { // ff 4+
 		// https://developer.mozilla.org/en-US/docs/DOM/document.currentScript
-		//noinspection JSUnresolvedVariable
 		var s = doc.currentScript;
 		return s ? s.src || s.baseURI : global.location && global.location.href;
 	}, define, require, uri_re;
@@ -65,7 +62,7 @@
 	 * If module definiens knows clearly about the dependencies(usually he does), skip the automatic dependency parsing for performance.
 	 *
 	 * @param {string}  id              The path relative to related base, the whole path of 'xxx/yyy' should be <base> + 'xxx/yyy'.
-	 * @param {array}   dependencies    The dependencies array, it's only used in combine file, if not set, it will parse the definition function to get such array.
+	 * @param {Array}   dependencies    The dependencies array, it's only used in combine file, if not set, it will parse the definition function to get such array.
 	 * @param {*}       definition      The definition function or object.
 	 */
 	define = global.define = function (id, dependencies, definition) {
@@ -182,23 +179,18 @@
 	 * Gets the module object based on the set `uri` string and `parent` module.
 	 *
 	 * @param {string}  uri     The URI string represents the module, required.
-	 * @param {Module}  parent  The parent module from which this module is required.
-	 *
-	 * @returns {Module}    The represented module object.
+	 * @param {object}  parent  The parent module from which this module is required.
 	 */
 	define.getModule = function (uri, parent) {
 		var modules = define.modules, id, t;
 		if (modules.hasOwnProperty(uri)) {
 			return modules[uri];
 		}
-		//noinspection JSUnresolvedVariable
 		if (parent && parent.maps.hasOwnProperty(uri)) {
-			//noinspection JSUnresolvedVariable
 			return modules[parent.maps[uri]];
 		}
 		id = define.alias[uri] || uri;
 		if (/^[.\/]/.test(id)) { // IE7- returns undefined for s[0]
-			//noinspection JSUnresolvedVariable
 			id = define.resolve(id, parent ? parent.path : define.base);
 		}
 		if (id.indexOf(':') === -1) {
@@ -210,7 +202,6 @@
 			t = t[1];
 		}
 		if (parent) {
-			//noinspection JSUnresolvedVariable
 			parent.maps[uri] = id;
 		}
 		return modules.hasOwnProperty(id) ? modules[id] : modules[id] = {id : id, path : t, exports : {}, status : 0};
@@ -232,10 +223,9 @@
 	/**
 	 * Resolves the dependencies of module, if all dependent modules are ready(status: interactive|complete), then call `define.onReady` with this module, and if some dependent modules are not loaded, load related modules.
 	 *
-	 * @param {Module}  module  The module to be resolved, required.
+	 * @param {object}  module  The module to be resolved, required.
 	 */
 	define.resolveDependencies = function (module) {
-		//noinspection JSUnresolvedVariable
 		var getModule = define.getModule, i = -1, deps = module.dependencies || (module.definition ? define.parse(module.definition.toString()) : []), l = deps.length - 1, dependencies = module.dependencies = {}, wait = 0, loads = [], id = module.id, m;
 		if (i < l) {
 			//noinspection JSUndefinedPropertyAssignment
@@ -296,20 +286,16 @@
 	/**
 	 * Callback function when module is ready, to notify all ancestor modules recursively.
 	 *
-	 * @param {Module}  module  The module on the 'interactive' status, required.
+	 * @param {object}  module  The module on the 'interactive' status, required.
 	 */
 	define.onReady = function (module) {
-		//noinspection JSUnresolvedVariable
 		var ancestors = module.ancestors, m, l, id, onReady, modules;
-		//noinspection JSUnresolvedVariable
 		delete module.wait;
 		module.status = 3;  // INTERACTIVE
 		if (define.debug && define.log) {
-			//noinspection JSUnresolvedVariable
 			define.log(module.id + ' interactive');
 		}
 		if (ancestors) {
-			//noinspection JSUnresolvedVariable
 			for (l = ancestors.length - 1, onReady = define.onReady, modules = define.modules, id = module.id; l >= 0; l -= 1) {
 				m = modules[ancestors[l]];
 				if (m.wait) {
@@ -320,7 +306,6 @@
 					}
 				}
 			}
-			//noinspection JSUnresolvedVariable
 			delete module.ancestors;
 		} else {
 			global.setTimeout(function () {    // used to reduce function call stack number
@@ -332,14 +317,12 @@
 	/**
 	 * Executes the module definition function, it's called when first `require` function runs.
 	 *
-	 * @param {Module}  module  The module to be executed, required.
+	 * @param {object}  module  The module to be executed, required.
 	 */
 	define.execModule = function (module) {
 		if (module.status === 4 || module.status === -1) { return; }
-		//noinspection JSUnresolvedVariable
 		var definition = module.definition, t = typeof definition, p;
 		if (define.debug && define.log) {
-			//noinspection JSUnresolvedVariable
 			define.log(module.id + ' complete');
 		}
 		module.status = 4;  // COMPLETE
@@ -372,7 +355,7 @@
 	/**
 	 * Callback function when module is complete, this is the last step in module lifecycle.
 	 *
-	 * @param {Module}  module  The module on the 'complete' status, required.
+	 * @param {object}  module  The module on the 'complete' status, required.
 	 */
 	define.onComplete = function (module) {
 		var modules, deps, p, m, resolveDependencies = define.resolveDependencies;
@@ -445,12 +428,11 @@ define('util/uri', [], function (require, exports) {
 	 *
 	 * @param {string}  uri     The URI string to be resolved.
 	 * @param {string}  base    Base string.
-	 * @param {array}   maps    Object like ['en-us', 'zh-cn'] to replace all 'en-us' strings in `uri` string to 'zh-cn'.
+	 * @param {Array}   maps    Object like ['en-us', 'zh-cn'] to replace all 'en-us' strings in `uri` string to 'zh-cn'.
 	 */
 	exports.resolve = function (uri, base, maps) {
 		var s = uri, i, l, t;
 		if (typeof base === 'Object') {
-			//noinspection JSUnresolvedVariable
 			maps = base.maps;
 			base = base.base;
 		}
@@ -467,7 +449,6 @@ define('util/uri', [], function (require, exports) {
 				}
 			}
 		}
-		//noinspection JSUnresolvedFunction
 		for (s = normalize(s), i = 0, t = maps ? maps.concat(_maps) : _maps, l = t.length; i < l; i += 1) {
 			s = s.replace(t[i], t[i += 1]);
 		}
@@ -681,7 +662,6 @@ define('base/load', [], function (require, exports) {
 			} : function (node, uri, callback, ctx) {    // opera12-
 				// although it supports both 'onload' and 'onreadystatechange',
 				// but it won't trigger anything if 404, empty or invalid file, use timer instead
-				//noinspection JSUnresolvedFunction
 				var body = !exports.preserve && doc.body, timer = global.setTimeout(function () {
 					node.onload = null;
 					if (callback) {
@@ -694,7 +674,6 @@ define('base/load', [], function (require, exports) {
 				}, exports.timeout);
 				node.onload = function (e) {
 					this.onload = null;
-					//noinspection JSUnresolvedFunction
 					global.clearTimeout(timer);
 					node = timer = null;
 					if (callback) {
@@ -738,7 +717,6 @@ define('base/load', [], function (require, exports) {
 				// ignore very old ff & webkit which don't trigger anything for all situations
 				var t = !ff && isSameHost(uri), timer;
 				if (node.onerror === undefined || global.opera) {   // opera won't trigger anything if 404
-					//noinspection JSUnresolvedFunction
 					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
@@ -748,13 +726,11 @@ define('base/load', [], function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						//noinspection JSUnresolvedFunction
 						global.clearTimeout(timer);
 						timer = null;
 					}
 					node = null;
 					// 'sheet.cssRules' is accessible only if same host, and ff always returns 0 for 'cssRules.length'
-					//noinspection JSUnresolvedVariable
 					callback.call(ctx, uri, e.type === 'load' && (!t || this.sheet.cssRules.length), this, e);
 				};
 			};
@@ -774,7 +750,6 @@ define('base/load', [], function (require, exports) {
 			if (callback) {
 				// opera12- supports 'onerror', but won't trigger if 404 from different host
 				if (global.opera && !isSameHost(uri)) {
-					//noinspection JSUnresolvedFunction
 					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
 						callback.call(ctx, uri, false, node);
@@ -784,7 +759,6 @@ define('base/load', [], function (require, exports) {
 				node.onload = node.onerror/* = node.onabort*/ = function (e) {
 					this.onload = this.onerror/* = this.onabort*/ = null;
 					if (timer) {
-						//noinspection JSUnresolvedFunction
 						global.clearTimeout(timer);
 						timer = null;
 					}
@@ -1038,7 +1012,7 @@ define('util/console', [], function (require, exports, module) {
 	/**
 	 * Loads the set modules by the uris of each module.
 	 *
-	 * @param {array}   modules     The modules to be loaded, required.
+	 * @param {Array}   modules     The modules to be loaded, required.
 	 */
 	define.load = function (modules) {
 		var onLoad = define.onLoad, maps = define.maps, i = -1, l = modules.length - 1, m;
@@ -1052,7 +1026,6 @@ define('util/console', [], function (require, exports, module) {
 		}
 	};
 
-	//noinspection JSUnresolvedVariable
 	current_script = doc.currentScript || doc.getElementById('$_');
 	if (!current_script) {
 		for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {

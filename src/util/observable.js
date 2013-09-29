@@ -141,7 +141,6 @@ define(function (require, exports) {
 		if (!name || typeof name === 'boolean') {    // obj | obj, blocking
 			e = name;
 			name = obj;
-			//noinspection JSUnresolvedVariable
 			obj = name.target;
 		}
 		return trigger.call(obj, name, e, blocking);

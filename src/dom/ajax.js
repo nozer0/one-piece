@@ -9,17 +9,13 @@
 define(function (require, exports) {
 	'use strict';
 
-	//noinspection JSUnresolvedVariable
 	var global = define.global, FormData = global.FormData, FileReader = global.FileReader, Blob = global.Blob, doc = global.document, global_cfg = {}, uri_re = /^(?:(\w+:)\/\/)?([^:\/]+:?[\d]*)/, domain_re = /\w+\.[a-z]+:?\d*$/i, getXHR = global.XMLHttpRequest ? function () {
-		//noinspection JSUnresolvedFunction
 		return new global.XMLHttpRequest();
 	} : function () {  // IE8-
 		try {
-			//noinspection JSUnresolvedFunction
 			return new global.ActiveXObject('Msxml2.XMLHTTP');
 		} catch (ignore) {
 			try {
-				//noinspection JSUnresolvedFunction
 				return new global.ActiveXObject('Microsoft.XMLHTTP');
 			} catch (ignored) {}
 		}
@@ -203,7 +199,6 @@ define(function (require, exports) {
 
 	function serializer4(name, value) {    // multipart/form-data after read file
 		var file = value.file;
-		//noinspection JSUnresolvedVariable
 		return 'Content-Disposition: form-data; name="' + name + '"; filename="' + (file.name || file.fileName) + '"\r\nContent-type: ' + file.type + ';\r\n\r\n' + value.content;
 	}
 
@@ -258,9 +253,7 @@ define(function (require, exports) {
 		var ifm, body, win, arr, i, l;
 		switch (type) {
 			case 'arraybuffer':
-				//noinspection JSUnresolvedVariable
 				if (xhr && xhr.responseBody) {  // IE7+
-					//noinspection JSUnresolvedVariable
 					res = xhr.responseBody;
 				} else if (global.Uint8Array) { // FF
 					for (i = 0, l = res.length, arr = new Uint8Array(l); i < l; i += 1) {
@@ -278,7 +271,6 @@ define(function (require, exports) {
 				win.document.write(res);
 				res = win.document;
 				if (res.readyState && res.readyState !== 'complete') {  // OP
-					//noinspection JSUnresolvedFunction
 					global.setTimeout(function () {
 						body.removeChild(ifm);
 						body = ifm = null;
@@ -311,7 +303,7 @@ define(function (require, exports) {
 		if (this.readyState === 4) {
 			if (this.status >= 200 && this.status < 300) {
 				var res = this.response || this.hasOwnProperty('responseText') && this.responseText;
-				this.cfg.onsuccess.call(this.cfg.context, typeof res === 'string' ? processResponse(res, this.cfg.type, this) : res);
+				this.cfg.onsuccess.call(this.cfg.context, typeof res === 'string' ? processResponse(res, this.cfg.responseType, this) : res);
 			} else {
 				this.cfg.onfail.call(this.cfg.context, this.status);
 			}
@@ -325,7 +317,6 @@ define(function (require, exports) {
 	form2Req = FormData ? function (form) { // CH7+, FF4+, IE10+, OP12+, SA5+
 		return new FormData(form);
 	} : FileReader ? function (form, xhr) { // CH6+, FF4+, IE10+, OP12+, SA6+
-		//noinspection JSCheckFunctionSignatures
 		var p = '---------------------------' + Date.now().toString(16);
 		serialize(getFormData(form), 'multipart/form-data', p, function (data) { xhr.send(data); });
 		xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + p);
@@ -342,7 +333,7 @@ define(function (require, exports) {
 			if (doc.readyState === 'complete' && ifm.readyState === 'complete') {
 				var document = ifm.contentWindow.document;
 				body.removeChild(ifm);
-				cfg.onsuccess(cfg.type === 'document' ? document : processResponse(document.body.innerHTML, cfg.type));
+				cfg.onsuccess(cfg.responseType === 'document' ? document : processResponse(document.body.innerHTML, cfg.responseType));
 			}
 		});
 		form.submit();
@@ -361,7 +352,6 @@ define(function (require, exports) {
 		ifm.onload = function () {
 			var doc = ifm.contentDocument || ifm.contentWindow.document;
 			if (doc.readyState && doc.readyState !== 'complete') {  // OP
-				//noinspection JSUnresolvedFunction
 				global.setTimeout(function () {
 					body.removeChild(ifm);
 					body = ifm = null;
@@ -370,7 +360,7 @@ define(function (require, exports) {
 				body.removeChild(ifm);
 				body = ifm = null;
 			}
-			cfg.onsuccess.call(cfg.context, cfg.type === 'document' ? doc : processResponse(doc.body.innerHTML, cfg.type));
+			cfg.onsuccess.call(cfg.context, cfg.responseType === 'document' ? doc : processResponse(doc.body.innerHTML, cfg.responseType));
 		};
 		form.submit();
 		form.removeAttribute('target');
@@ -382,6 +372,7 @@ define(function (require, exports) {
 		for (data = serialize(data, 'flatten'), l = data.length; i < l; i += 1) {
 			d = data[i];
 			if (String(d.value) === '[object Blob]') {
+				//noinspection JSCheckFunctionSignatures
 				req.append(d.name, d.value, d.value.name || 'blob');
 			} else {
 				req.append(d.name, d.value);
@@ -389,7 +380,6 @@ define(function (require, exports) {
 		}
 		return req;
 	} : function (data, xhr) {
-		//noinspection JSCheckFunctionSignatures
 		var p = '---------------------------' + Date.now().toString(16);
 		serialize(data, 'multipart/form-data', p, function (data) { xhr.send(data); });
 		xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + p);
@@ -410,7 +400,7 @@ define(function (require, exports) {
 	 *  {string}            username            The username used for authorization.
 	 *  {string}            password            The password used for authorization.
 	 *  {object}            headers             Request headers.
-	 *  {string}            type                Request type, one of 'text', 'json', 'arraybuffer', 'blob' and 'document', returns the response object with set request type, default is 'text'.
+	 *  {string}            responseType        Response type, one of 'text', 'json', 'arraybuffer', 'blob' and 'document', returns the response object with set request type, default is 'text'.
 	 *  {int}               timeout             The number of milliseconds a request can take before automatically being terminated.
 	 *  {boolean}           cacheable           Whether the request is cacheable or not, default is false.
 	 *  {function}          onprogress          Download progress listener function.
@@ -481,15 +471,15 @@ define(function (require, exports) {
 				}
 			}
 			if (async) {    // Gecko 11+ throws exception if set for synchronous request
-				if (cfg.hasOwnProperty('type') && (!global.opera || cfg.type !== 'document')) {
+				if (cfg.hasOwnProperty('responseType') && (!global.opera || cfg.responseType !== 'document')) {
 					try {   // support by ff10+, op12+
-						xhr.responseType = cfg.type;
+						xhr.responseType = cfg.responseType;
 					} catch (ignore) {}
 				}
 				if (cfg.timeout) { xhr.timeout = cfg.timeout; }
 				// if (cross) { xhr.withCredentials = true; }
 			}
-			if ((cfg.type === 'xml') && xhr.overrideMimeType) {
+			if ((cfg.responseType === 'xml') && xhr.overrideMimeType) {
 				xhr.overrideMimeType('text/xml');
 			}
 			if (!reading) { xhr.send(req); }
@@ -506,7 +496,7 @@ define(function (require, exports) {
 				} catch (ignore) {
 					global[t] = undefined;
 				}
-				cfg.onsuccess.call(cfg.context, typeof res === 'string' ? processResponse(res, cfg.type) : res);
+				cfg.onsuccess.call(cfg.context, typeof res === 'string' ? processResponse(res, cfg.responseType) : res);
 			};
 			loader.load(url + (url.indexOf('?') > 0 ? '&' : '?') + 'jsonp=' + t + '&' + serialize(form ? getFormData(form) : data), 'js', onJSONPFail, xhr);
 //			}

@@ -1,6 +1,5 @@
 /*global define */
 define(function (require) {
-	//noinspection JSUnresolvedVariable
 	var assert = require('util/assert'), ajax = require('dom/ajax'), Blob = define.global.Blob, test = require('util/test').run({
 		name               : 'ajax',
 		setUp              : function () {
@@ -46,15 +45,14 @@ define(function (require) {
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
 		testArrayBuffer    : function () {
 			ajax.ajax({
-				url       : './ajax-test.php',
-				name      : 'testArrayBuffer',
-				method    : 'post',
-				data      : {type : 'arraybuffer'},
-				type      : 'arraybuffer',
-				onsuccess : function (res) {
+				url          : './ajax-test.php',
+				name         : 'testArrayBuffer',
+				method       : 'post',
+				data         : {type : 'arraybuffer'},
+				responseType : 'arraybuffer',
+				onsuccess    : function (res) {
 					try {
 						var arr, i, l;
-						//noinspection JSUnresolvedVariable
 						if (define.global.Uint8Array) {
 							for (arr = new Uint8Array(res), i = 0, l = arr.length, res = ''; i < l; i += 1) {
 								res += String.fromCharCode(arr[i]);
@@ -66,18 +64,18 @@ define(function (require) {
 						test.fail(this.name, null, ex);
 					}
 				},
-				onfail    : this.fail_callback
+				onfail       : this.fail_callback
 			});
 			return false;
 		},
 		testBlob           : define.global.FileReader && function () {
 			ajax.ajax({
-				url       : './ajax-test.php',
-				name      : 'testBlob',
-				method    : 'post',
-				data      : {type : 'blob'},
-				type      : 'blob',
-				onsuccess : function (res) {
+				url          : './ajax-test.php',
+				name         : 'testBlob',
+				method       : 'post',
+				data         : {type : 'blob'},
+				responseType : 'blob',
+				onsuccess    : function (res) {
 					var reader = new FileReader(), name = this.name;
 					reader.onloadend = function () {
 						try {
@@ -89,18 +87,18 @@ define(function (require) {
 					};
 					reader.readAsText(res);
 				},
-				onfail    : this.fail_callback
+				onfail       : this.fail_callback
 			});
 			return false;
 		},
 		testDocument       : function () {
 			ajax.ajax({
-				url       : './ajax-test.php',
-				name      : 'testDocument',
-				method    : 'post',
-				data      : {type : 'document'},
-				type      : 'document',
-				onsuccess : function (res) {
+				url          : './ajax-test.php',
+				name         : 'testDocument',
+				method       : 'post',
+				data         : {type : 'document'},
+				responseType : 'document',
+				onsuccess    : function (res) {
 					try {
 						assert.equal(res.documentElement.innerHTML.replace('\r\n', '').toLowerCase(), '<head><title>document response</title></head><body></body>');
 						test.success(this.name);
@@ -108,18 +106,18 @@ define(function (require) {
 						test.fail(this.name, null, ex);
 					}
 				},
-				onfail    : this.fail_callback
+				onfail       : this.fail_callback
 			});
 			return false;
 		},
 		testJSON           : function () {
 			ajax.ajax({
-				url       : './ajax-test.php',
-				name      : 'testJSON',
-				method    : 'post',
-				data      : {type : 'json', n : 1, s : '啊', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
-				type      : 'json',
-				onsuccess : function (res) {
+				url          : './ajax-test.php',
+				name         : 'testJSON',
+				method       : 'post',
+				data         : {type : 'json', n : 1, s : '啊', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
+				responseType : 'json',
+				onsuccess    : function (res) {
 					try {
 						assert.deepEqual(res, {type : 'json', n : 1, s : '啊', d : String(this.data.d), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : 'aaa'});
 						test.success(this.name);
@@ -127,7 +125,7 @@ define(function (require) {
 						test.fail(this.name, null, ex);
 					}
 				},
-				onfail    : this.fail_callback
+				onfail       : this.fail_callback
 			});
 			return false;
 		},
@@ -158,7 +156,7 @@ define(function (require) {
 				name      : 'testForm',
 				method    : 'post',
 				form      : form,
-				type      : 'json',
+				response  : 'json',
 				onsuccess : function (res) {
 					try {
 						assert.deepEqual(res, {hidden : 'hidden', type : 'json', s : '啊', chk : ['a', 'b'], radio : ['b'], overwrite : 'overwritten', sel : '绿', sel2 : ['Red', '绿']});
