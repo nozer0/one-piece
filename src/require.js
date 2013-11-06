@@ -142,12 +142,12 @@
 	/**
 	 * Sets the global configuration for all `define` functions.
 	 *
-	 * @param {object}  cfg     The configuration object, includes the options below, required.
+	 * @param {Object}  cfg     The configuration object, includes the options below, required.
 	 *  {string}    base        Uses the base position which 'require.js' file in as default.
 	 *  {boolean}   debug       Preserves the script nodes and more detail logs if true, default is false.
-	 *  {array}     plugins     The array of plugins need to be loaded with, which use 'require-' as prefix of module name.
-	 *  {object}    alias
-	 *  {object}    global      The global context object for all define modules.
+	 *  {Array}     plugins     The array of plugins need to be loaded with, which use 'require-' as prefix of module name.
+	 *  {Object}    alias
+	 *  {Object}    global      The global context object for all define modules.
 	 *  {string}    configPath  The configuration file path.
 	 */
 	define.config = function (cfg) {
@@ -179,7 +179,7 @@
 	 * Gets the module object based on the set `uri` string and `parent` module.
 	 *
 	 * @param {string}  uri     The URI string represents the module, required.
-	 * @param {object}  parent  The parent module from which this module is required.
+	 * @param {Object}  parent  The parent module from which this module is required.
 	 */
 	define.getModule = function (uri, parent) {
 		var modules = define.modules, id, t;
@@ -223,7 +223,7 @@
 	/**
 	 * Resolves the dependencies of module, if all dependent modules are ready(status: interactive|complete), then call `define.onReady` with this module, and if some dependent modules are not loaded, load related modules.
 	 *
-	 * @param {object}  module  The module to be resolved, required.
+	 * @param {Object}  module  The module to be resolved, required.
 	 */
 	define.resolveDependencies = function (module) {
 		var getModule = define.getModule, i = -1, deps = module.dependencies || (module.definition ? define.parse(module.definition.toString()) : []), l = deps.length - 1, dependencies = module.dependencies = {}, wait = 0, loads = [], id = module.id, m;
@@ -286,7 +286,7 @@
 	/**
 	 * Callback function when module is ready, to notify all ancestor modules recursively.
 	 *
-	 * @param {object}  module  The module on the 'interactive' status, required.
+	 * @param {Object}  module  The module on the 'interactive' status, required.
 	 */
 	define.onReady = function (module) {
 		var ancestors = module.ancestors, m, l, id, onReady, modules;
@@ -317,7 +317,7 @@
 	/**
 	 * Executes the module definition function, it's called when first `require` function runs.
 	 *
-	 * @param {object}  module  The module to be executed, required.
+	 * @param {Object}  module  The module to be executed, required.
 	 */
 	define.execModule = function (module) {
 		if (module.status === 4 || module.status === -1) { return; }
@@ -355,7 +355,7 @@
 	/**
 	 * Callback function when module is complete, this is the last step in module lifecycle.
 	 *
-	 * @param {object}  module  The module on the 'complete' status, required.
+	 * @param {Object}  module  The module on the 'complete' status, required.
 	 */
 	define.onComplete = function (module) {
 		var modules, deps, p, m, resolveDependencies = define.resolveDependencies;
@@ -458,7 +458,7 @@ define('util/uri', [], function (require, exports) {
 	/**
 	 * Sets the global configuration like `base` and `maps` which applied for all `resolve` methods.
 	 *
-	 * @param {object}  cfg     The configuration object includes 'base' and 'maps' options.
+	 * @param {Object}  cfg     The configuration object includes 'base' and 'maps' options.
 	 */
 	exports.config = function (cfg) {
 		var k, src, i, l, m, s;
@@ -787,7 +787,7 @@ define('base/load', [], function (require, exports) {
 	 * Sets additional loader for specified type.
 	 *
 	 * @param {string}      type    The type of file that loader function deals with, required.
-	 * @param {function}    loader  The loader function, which supports 3 arguments, `uri`, `callback` and `ctx`, required.
+	 * @param {Function}    loader  The loader function, which supports 3 arguments, `uri`, `callback` and `ctx`, required.
 	 */
 	exports.setLoader = function (type, loader) {
 		loaders[type] = loader;
@@ -861,7 +861,7 @@ define('base/load', [], function (require, exports) {
 	 *
 	 * @param {string}      uri         The URI to be loaded, required.
 	 * @param {string}      type        The type of file requested, if not set, it's detected from URI string.
-	 * @param {function}    callback    The callback function when load success or fail, takes `uri` and `result` as arguments.
+	 * @param {Function}    callback    The callback function when load success or fail, takes `uri` and `result` as arguments.
 	 * @param {*}           ctx         The context object of `callback` function, default is `define.global`.
 	 */
 	exports.load = function (uri, type, callback, ctx) {

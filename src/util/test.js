@@ -44,7 +44,7 @@ define(function (require, exports) {
 	/**
 	 * Runs the cases one by one, and gives the test result in the console UI, and returns the test object for later use.
 	 *
-	 * @param {object}  cases   Includes the cases to be tested, which use 'test' as prefix of key name, required; for synchronize test case, throw Errors if failure; for the cases can't get result immediately, MUST return false to indicate it's an asynchronize test case, and call `success(case_name)` or `fail(case_name)` function of return object to notify the result later; also support `setUp` and `tearDown` functions like normal Unit Test.
+	 * @param {Object}  cases   Includes the cases to be tested, which use 'test' as prefix of key name, required; for synchronize test case, throw Errors if failure; for the cases can't get result immediately, MUST return false to indicate it's an asynchronize test case, and call `success(case_name)` or `fail(case_name)` function of return object to notify the result later; also support `setUp` and `tearDown` functions like normal Unit Test.
 	 */
 	exports.run = function (cases) {
 		var p, t = cases.start = new Date(), ret, async;

@@ -32,7 +32,7 @@ define(function (require) {
 				data      : {n : 1, s : 'a', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
 				onsuccess : function (res) {
 					try {
-						assert.equal(res, '{"n":1,"s":"a","d":"' + String(this.data.d) + '","o":{"x":1,"y":2},"arr":["a","b"],"fn":"aaa"}');
+						assert.equal(res.replace(/"\d+":"",/, ''), '{"n":1,"s":"a","d":"' + String(this.data.d) + '","o":{"x":1,"y":2},"arr":["a","b"],"fn":"aaa"}');
 						test.success(this.name);
 					} catch (ex) {
 						test.fail(this.name, null, ex);
@@ -118,7 +118,14 @@ define(function (require) {
 				data         : {type : 'json', n : 1, s : '啊', d : new Date(), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : function () { return 'aaa'; }},
 				responseType : 'json',
 				onsuccess    : function (res) {
+					var p;
 					try {
+						for (p in res) {
+							if (res.hasOwnProperty(p) && res[p] === '' && !isNaN(p)) {
+								delete res[p];
+								break;
+							}
+						}
 						assert.deepEqual(res, {type : 'json', n : 1, s : '啊', d : String(this.data.d), o : {x : 1, y : 2}, arr : ['a', 'b'], fn : 'aaa'});
 						test.success(this.name);
 					} catch (ex) {
@@ -156,9 +163,16 @@ define(function (require) {
 				name      : 'testForm',
 				method    : 'post',
 				form      : form,
-				response  : 'json',
+				responseType  : 'json',
 				onsuccess : function (res) {
+					var p;
 					try {
+						for (p in res) {
+							if (res.hasOwnProperty(p) && res[p] === '' && !isNaN(p)) {
+								delete res[p];
+								break;
+							}
+						}
 						assert.deepEqual(res, {hidden : 'hidden', type : 'json', s : '啊', chk : ['a', 'b'], radio : ['b'], overwrite : 'overwritten', sel : '绿', sel2 : ['Red', '绿']});
 						test.success(this.name);
 					} catch (ex) {

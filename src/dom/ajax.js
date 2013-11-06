@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-08-18 23:39
+ * Modified : 2013-11-05 22:53
  * Name     : dom/ajax.js
  */
 
@@ -145,7 +145,7 @@ define(function (require, exports) {
 //						if (t === '[object File]') { ret.hasFile = true; }
 						data.push(serializer(k, typeof v === 'function' ? v() : v, ret));
 					} else if (matched.indexOf(v) === -1) {
-						data = data.concat(_serialize(v, serializer, matched, ret, k));
+						data = data.concat(_serialize(v, serializer, matched, ret, String(k)));
 					}
 				}
 			}
@@ -158,7 +158,7 @@ define(function (require, exports) {
 //					if (t === '[object File]') { ret.hasFile = true; }
 					data.push(serializer(k, typeof v === 'function' ? v() : v, ret));
 				} else if (matched.indexOf(v) === -1) {
-					data = data.concat(_serialize(v, serializer, matched, ret, k));
+					data = data.concat(_serialize(v, serializer, matched, ret, String(k)));
 				}
 			}
 		}
@@ -216,10 +216,10 @@ define(function (require, exports) {
 	/**
 	 * Serializes the object into strings based on the encode type.
 	 *
-	 * @param {object}      obj         The object or array to be serialized, required.
+	 * @param {Object}      obj         The object or array to be serialized, required.
 	 * @param {int}         enctype     Indicates which encode type applying to the serialization, one of 'application/x-www-form-urlencoded', 'text/plain', 'multipart/form-data', 'flatten'; the special one is 'flatten', just flattens the data and returns an object indicates file included or not, and an array composed of `{name:name, value:value}` object; use 'GET' if ignored.
 	 * @param {string}      boundary    The boundary string, required if 'multipart/form-data' enctype.
-	 * @param {function}    done        Callback function triggered when all files read, required as `boundary`.
+	 * @param {Function}    done        Callback function triggered when all files read, required as `boundary`.
 	 */
 	serialize = exports.serialize = function (data, enctype, boundary, done) {
 		if (!data) { return; }
@@ -388,10 +388,10 @@ define(function (require, exports) {
 	/**
 	 * Ajax wrapper function. Supports set a form element directly as sending data instead of normal data object, and each way support files included.
 	 *
-	 * @param {object}  cfg     Configuration object, includes the options below.
+	 * @param {Object}  cfg     Configuration object, includes the options below.
 	 *  {string}            url                 Request url, if not set, use the `action` attribute of `form`.
 	 *  {HTMLFormElement}   form                The form element to be sent.
-	 *  {object}            data                The data object or array to be sent.
+	 *  {Object}            data                The data object or array to be sent.
 	 *  {string}            method              Request method, default is 'GET'.
 	 *  {string}            enctype             Request encoding type, one of 'application/x-www-form-urlencoded', 'text/plain', 'multipart/form-data'; if not set, use the `enctype` attribute of `form`; MUST be set to 'multipart/form-data' if file included.
 	 *  {string}            encoding            The request encoding.
@@ -399,14 +399,14 @@ define(function (require, exports) {
 	 *  {boolean}           async               False if want synchronise request.
 	 *  {string}            username            The username used for authorization.
 	 *  {string}            password            The password used for authorization.
-	 *  {object}            headers             Request headers.
+	 *  {Object}            headers             Request headers.
 	 *  {string}            responseType        Response type, one of 'text', 'json', 'arraybuffer', 'blob' and 'document', returns the response object with set request type, default is 'text'.
 	 *  {int}               timeout             The number of milliseconds a request can take before automatically being terminated.
 	 *  {boolean}           cacheable           Whether the request is cacheable or not, default is false.
-	 *  {function}          onprogress          Download progress listener function.
-	 *  {function}          upload/onprogress   Upload progress listener function.
-	 *  {function}          onsuccess           Callback function when request successfully, takes `response` as it's argument.
-	 *  {function}          onfail              Callback function when request failed, takes `status` as it's argument.
+	 *  {Function}          onprogress          Download progress listener function.
+	 *  {Function}          upload/onprogress   Upload progress listener function.
+	 *  {Function}          onsuccess           Callback function when request successfully, takes `response` as it's argument.
+	 *  {Function}          onfail              Callback function when request failed, takes `status` as it's argument.
 	 *
 	 * @returns {XMLHttpRequest}   Returns the xhr object itself.
 	 */
@@ -507,7 +507,7 @@ define(function (require, exports) {
 	/**
 	 * Sets global configuration object.
 	 *
-	 * @param {object}  cfg The configuration object, required.
+	 * @param {Object}  cfg The configuration object, required.
 	 */
 	exports.ajaxSetup = function (cfg) {
 		if (!cfg) { return; }

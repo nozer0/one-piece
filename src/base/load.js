@@ -181,7 +181,7 @@ define(function (require, exports) {
 	 * Sets additional loader for special type.
 	 *
 	 * @param {string}      type    The type of file that loader function deals with, required.
-	 * @param {function}    loader  The loader function, which supports 3 arguments, `uri`, `callback` and `ctx`, required.
+	 * @param {Function}    loader  The loader function, which supports 3 arguments, `uri`, `callback` and `ctx`, required.
 	 */
 	exports.setLoader = function (type, loader) {
 		loaders[type] = loader;
@@ -255,7 +255,7 @@ define(function (require, exports) {
 	 *
 	 * @param {string}      uri         The URI to be loaded, required.
 	 * @param {string}      type        The type of file requested, if not set, it's detected from URI string.
-	 * @param {function}    callback    The callback function when load success or fail, takes `uri` and `result` as arguments.
+	 * @param {Function}    callback    The callback function when load success or fail, takes `uri` and `result` as arguments.
 	 * @param {*}           ctx         The context object of `callback` function, default is `define.global`.
 	 */
 	exports.load = function (uri, type, callback, ctx) {

@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-08-19 22:51
+ * Modified : 2013-10-11 18:51
  * Name     : util/assert.js
  */
 
@@ -77,7 +77,7 @@ define(function (require, exports, module) {
 				l += 1;
 				o = actual[p];
 				o2 = expected[p];
-				if (typeof o === 'object') {
+				if (o && typeof o === 'object') {
 					if (o.constructor === Date) {
 						if (String(o) !== String(expected[p])) {
 							return false;
@@ -101,7 +101,7 @@ define(function (require, exports, module) {
 		/**
 		 * Extend error object inherits from `Error`.
 		 *
-		 * @param {object}  cfg     Configuration object, includes the options below.
+		 * @param {Object}  cfg     Configuration object, includes the options below.
 		 *  {string}    message     The error message string, default is 'AssertionError'.
 		 *  {*}         actual      The actual result object, required.
 		 *  {*}         expected    The expected result object, required.

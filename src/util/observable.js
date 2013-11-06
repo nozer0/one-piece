@@ -7,7 +7,6 @@
 
 /*global define */
 define(function (require, exports) {
-	'use strict';
 
 	var cache = {}, seed = 0, setProperty;
 
@@ -70,38 +69,43 @@ define(function (require, exports) {
 
 	function trigger(name, e, blocking) {
 		var expando, objs, observers, i, l;
-		if ((expando = this.__expando) && (objs = cache[expando])) {
-			if (typeof name !== 'string') {    // e, blocking
-				blocking = e;
-				e = name;
-				name = e.type;
+		if (!(expando = this.__expando) || !(objs = cache[expando])) {
+			return this;
+		}
+		if (typeof name !== 'string') {    // e, blocking
+			blocking = e;
+			e = name;
+			name = e.type;
+		}
+		observers = objs[name] || [];
+		// if the set type is like 'xxx:yyy', notifies the observers of 'xxx' event too
+		i = name.indexOf(':');
+		if (i > 0) {
+			observers.push.apply(observers, objs[name.substr(0, i)]);
+		}
+		l = observers.length;
+		if (l) {
+			if (e.type !== name) {
+				try {
+					e.type = name;
+				} catch (ignore) {}
 			}
-			observers = objs[name] || [];
-			// if the set type is like 'xxx:yyy', notifies the observers of 'xxx' event too
-			i = name.indexOf(':');
-			if (i > 0) {
-				observers.push.apply(observers, objs[name.substr(0, i)]);
+			if (!e.target) {
+				try {
+					e.target = this;
+				} catch (ignore) {}
 			}
-			l = observers.length;
-			if (l) {
-				if (!e.type) { e.type = name; }
-				if (!e.target) {
+			if (blocking) {
+				// do not use `setTimeout` to simulate asynchronization because predict triggers are needed sometimes
+				for (i = 0; i < l; i += 1) {
 					try {
-						e.target = this;
-					} catch (ignore) {}
-				}
-				if (blocking) {
-					// do not use `setTimeout` to simulate asynchronization because predict triggers are needed sometimes
-					for (i = 0; i < l; i += 1) {
-						try {
-							if (observers[i].call(this, e) === false) { return false; }
-						} catch (ex) {
-							if (console && console.error) { console.error(ex); }
-						}
+						if (observers[i].call(this, e) === false) { return false; }
+					} catch (ex) {
+						if (console && console.error) { console.error(ex); }
 					}
-				} else {
-					observe(observers, e, this);
 				}
+			} else {
+				observe(observers, e, this);
 			}
 		}
 		return this;
@@ -110,9 +114,9 @@ define(function (require, exports) {
 	/**
 	 * Registers an event handler for the specified event on set object.
 	 *
-	 * @param {object}          obj         The object to be observed, required.
-	 * @param {string|object}   name        Two formats of this argument, if 'string', the name of event observed, required; or 'object' for multiple observers, `{name1 : observer1, name2: observer2, ...}`, required.
-	 * @param {function}        observer    The observer function, required.
+	 * @param {Object}          obj         The object to be observed, required.
+	 * @param {string|Object}   name        Two formats of this argument, if 'string', the name of event observed, required; or 'object' for multiple observers, `{name1 : observer1, name2: observer2, ...}`, required.
+	 * @param {Function}        observer    The observer function, required.
 	 */
 	exports.on = function (obj, name, observer) {
 		return on.call(obj, name, observer);
@@ -121,9 +125,9 @@ define(function (require, exports) {
 	/**
 	 * Removes the event handler for the specified event from set node.
 	 *
-	 * @param {object}      obj         The object to be observed, required.
+	 * @param {Object}      obj         The object to be observed, required.
 	 * @param {string}      name        The name of event to be observed, required.
-	 * @param {function}    observer    The observer function, required if obj is `HTMLElement|HTMLDocument`.
+	 * @param {Function}    observer    The observer function, required if obj is `HTMLElement|HTMLDocument`.
 	 */
 	exports.off = function (obj, name, observer) {
 		return off.call(obj, name, observer);
@@ -132,9 +136,9 @@ define(function (require, exports) {
 	/**
 	 * Dispatches the event from the specified target node in the event object.
 	 *
-	 * @param {object}  obj         The object fires the event, use `e.target` if ignored.
+	 * @param {Object}  obj         The object fires the event, use `e.target` if ignored.
 	 * @param {string}  name        The name of trigger event, use `e.type` if ignored.
-	 * @param {object}  e           The event object to be dispatched includes the event properties, required.
+	 * @param {Object}  e           The event object to be dispatched includes the event properties, required.
 	 * @param {boolean} blocking    Block until all observers finish execution, default is false.
 	 */
 	exports.trigger = function (obj, name, e, blocking) {
@@ -149,7 +153,7 @@ define(function (require, exports) {
 	/**
 	 * Adds the `on`, `off` and `trigger` methods to the set `obj`, makes it observable.
 	 *
-	 * @param {object}  obj     The object to be observed, required.
+	 * @param {Object}  obj     The object to be observed, required.
 	 */
 	exports.observable = function (obj) {
 		obj.on = on;
@@ -194,7 +198,7 @@ define(function (require, exports) {
 	 * Adds the `on`, `off`, `trigger` and `reset` methods to the set `obj`, and redefine the properties.
 	 * When set property like `o.x = 1`, it will trigger `beforeSet:x` event before set property, and `set:x` event after set. For old browsers do not support `setter` define, please use `set(field, value)` method instead.
 	 *
-	 * @param {object}  obj     The object to be observed, required.
+	 * @param {Object}  obj     The object to be observed, required.
 	 */
 	exports.settable = function (obj) {
 		var current, backup = {}, p, t = setProperty;

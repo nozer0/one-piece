@@ -63,6 +63,7 @@ define(function (require, exports, module) {
 		createEvent = function (e) {
 			var type = EventMaps[e.type] || e.type, bubbles = bubbles_re.test(type) ? false : e.bubbles !== false, cancelable = cancelable_re.test(type) ? false : e.cancelable !== false, view = e.view || global, detail = e.detail || 0, event;
 			try {
+				//noinspection IfStatementWithTooManyBranchesJS
 				if (Events.DragEvent.test(type)) {
 					event = doc.createEvent('DragEvent');
 					event.initDragEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget, e.dataTransfer);
@@ -111,8 +112,8 @@ define(function (require, exports, module) {
 			 * Registers an event handler for the specified event on set node.
 			 *
 			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
-			 * @param {string|object}               name        Two formats of this argument, if 'string', the name of event to be listened for, required; or 'object' for multiple listeners, `{name1 : listener1, name2: listener2, ...}`, required.
-			 * @param {function}                    listener    The listener function, required.
+			 * @param {string|Object}               name        Two formats of this argument, if 'string', the name of event to be listened for, required; or 'object' for multiple listeners, `{name1 : listener1, name2: listener2, ...}`, required.
+			 * @param {Function}                    listener    The listener function, required.
 			 * @param {boolean}                     useCapture  Listens on the 'capturing' phase or not.
 			 */
 			addEventListener : function (node, name, listener, useCapture) {
@@ -134,7 +135,7 @@ define(function (require, exports, module) {
 			 *
 			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
 			 * @param {string}                      name        The name of event to be listened for, required.
-			 * @param {function}                    listener    The listener function, required.
+			 * @param {Function}                    listener    The listener function, required.
 			 * @param {boolean}                     useCapture  This should be as same as set when `addEventListener` called.
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
@@ -146,9 +147,9 @@ define(function (require, exports, module) {
 			 * Dispatches the event from the specified target node in the event object.
 			 *
 			 *
-			 * @param {object}          node    The node object dispatches the event, use `e.target` if ignored.
+			 * @param {Object}          node    The node object dispatches the event, use `e.target` if ignored.
 			 * @param {string}          name    The name of event, use `e.type` if ignored.
-			 * @param {object|Event}    e       The event object to be dispatched, common `Event` object or plain object includes the event properties, required.
+			 * @param {Object|Event}    e       The event object to be dispatched, common `Event` object or plain object includes the event properties, required.
 			 */
 			dispatchEvent : function (node, name, e) {
 				if (e) {
@@ -170,7 +171,7 @@ define(function (require, exports, module) {
 			/**
 			 * Creates an Event object based on the set object.
 			 *
-			 * @param {object}  e   The plain object includes the event properties, required.
+			 * @param {Object}  e   The plain object includes the event properties, required.
 			 */
 			createEvent : newEvent ? function (e) {
 				var type = EventMaps[e.type] || e.type, p, event;
@@ -265,8 +266,8 @@ define(function (require, exports, module) {
 			 * Registers an event handler for the specified event on set node.
 			 *
 			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
-			 * @param {string|object}               name        Two formats of this argument, if 'string', the name of event to be listened for, required; or 'object' for multiple listeners, `{name1 : listener1, name2: listener2, ...}`, required.
-			 * @param {function}                    listener    The listener function, required.
+			 * @param {string|Object}               name        Two formats of this argument, if 'string', the name of event to be listened for, required; or 'object' for multiple listeners, `{name1 : listener1, name2: listener2, ...}`, required.
+			 * @param {Function}                    listener    The listener function, required.
 			 * @param {boolean}                     useCapture  Listens on the 'capturing' phase or not, optional.
 			 */
 			addEventListener : function (node, name, listener, useCapture) {
@@ -306,7 +307,7 @@ define(function (require, exports, module) {
 			 *
 			 * @param {HTMLElement|HTMLDocument}    node        The node object listen on, required.
 			 * @param {string}                      name        The name of event to be listened for, required.
-			 * @param {function}                    listener    The listener function, required.
+			 * @param {Function}                    listener    The listener function, required.
 			 * @param {boolean}                     useCapture  This should be as same as set when `addEventListener` called.
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
@@ -329,7 +330,7 @@ define(function (require, exports, module) {
 			/**
 			 * Dispatches the event from the specified target node in the event object.
 			 *
-			 * @param {Event|object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties, required.
+			 * @param {Event|Object}    e   The event object to be dispatched, common `Event` object or plain object includes the event properties, required.
 			 */
 			dispatchEvent : function (e) {
 				// to be noticed, 'fireEvent' does not trigger default action like 'dispatchEvent'
@@ -340,7 +341,7 @@ define(function (require, exports, module) {
 			/**
 			 * Creates an Event object based on the set object.
 			 *
-			 * @param {object}  e   The plain object includes the event properties, required.
+			 * @param {Object}  e   The plain object includes the event properties, required.
 			 */
 			createEvent : function (e) {
 				var event = doc.createEventObject(global.event), p = e.target;

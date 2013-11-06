@@ -79,7 +79,7 @@ define(function (require, exports) {
 	/**
 	 * Sets the global configuration like `base` and `maps` which applied for all `resolve` methods.
 	 *
-	 * @param {object}  cfg     The configuration object includes 'base' and 'maps' options.
+	 * @param {Object}  cfg     The configuration object includes 'base' and 'maps' options.
 	 */
 	exports.config = function (cfg) {
 		var k, src, i, l, m, s;
