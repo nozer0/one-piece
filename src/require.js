@@ -36,7 +36,7 @@
 				s = stack_re.exec(s);
 				if (s) { return s[1]; }
 			} else {    // IE6-9
-				for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {
+				for (ns = doc.getElementsByTagName('script'), l = ns.length; l;) {
 					s = ns[l -= 1];
 					if (s.readyState === 'interactive') {
 						// for IE8-, 's.src' won't return full url, in contract, IE8+ can only get full rul via 's.src'
@@ -66,7 +66,7 @@
 	 * @param {*}       definition      The definition function or object.
 	 */
 	define = global.define = function (id, dependencies, definition) {
-		var modules = define.modules, m, cfg, deps, o, i, l;
+		var modules = define.modules, m, cfg, deps, o, l;
 //		if (typeof id !== 'string' && !(id instanceof Array)) {   // define(def)
 //			definition = id;
 //			dependencies = define.parse(definition.toString());
@@ -99,9 +99,9 @@
 		} else {
 			deps = cfg.dependencies;
 			o = m.ancestors;
-			if (deps && o) {
-				for (i = 0, l = o.length; i < l; i += 1) {
-					if (deps.hasOwnProperty(o[i])) {
+			if (deps && o && (l = o.length)) {
+				while (l) {
+					if (deps.hasOwnProperty(o[l -= 1])) {
 						define.resolveDependencies(m);
 						break;
 					}
@@ -208,12 +208,12 @@
 	};
 
 	function cyclic(modules, deps, ancestors) {
-		var p, i, l;
+		var p, l;
 		for (p in deps) {
 			if (deps.hasOwnProperty(p) && (!deps[p] && modules[p].status === 2)) {
 				if (p === ancestors[0]) { return true; }    // got cyclic
-				for (i = 1, l = ancestors.length; i < l; i += 1) {
-					if (ancestors[i] === p) { return; } // inside cyclic
+				for (l = ancestors.length; l > 1;) {
+					if (ancestors[l -= 1] === p) { return; } // inside cyclic
 				}
 				if (cyclic(modules, modules[p].dependencies, ancestors.concat(p))) { return true; }
 			}
@@ -295,9 +295,9 @@
 		if (define.debug && define.log) {
 			define.log(module.id + ' interactive');
 		}
-		if (ancestors) {
-			for (l = ancestors.length - 1, onReady = define.onReady, modules = define.modules, id = module.id; l >= 0; l -= 1) {
-				m = modules[ancestors[l]];
+		if (ancestors && (l = ancestors.length)) {
+			for (onReady = define.onReady, modules = define.modules, id = module.id; l;) {
+				m = modules[ancestors[l -= 1]];
 				if (m.wait) {
 					m.dependencies[id] = true;
 					m.wait -= 1;
@@ -911,7 +911,7 @@ define('util/console', [], function (require, exports, module) {
 				l = logs.length;
 				s = logs[0];
 				if (l > 1) {
-					for (subs = s.match(/%[a-zA-Z]/g), l = subs && (subs.length < l) ? subs.length : -1, i = 0; i < l; i) {
+					for (subs = s.match(/%[a-zA-Z]/g), l = subs && (subs.length < l) ? subs.length : -1, i = 0; i < l;) {
 						s = s.replace(subs[i], logs[i += 1]);
 					}
 					for (i += 1, l = logs.length; i < l; i += 1) {
@@ -1028,7 +1028,7 @@ define('util/console', [], function (require, exports, module) {
 
 	current_script = doc.currentScript || doc.getElementById('$_');
 	if (!current_script) {
-		for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {
+		for (ns = doc.getElementsByTagName('script'), l = ns.length; l;) {
 			current_script = ns[l -= 1];
 			if (current_script.readyState === 'interactive') {
 				break;

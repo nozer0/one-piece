@@ -39,14 +39,14 @@ define(function (require, exports) {
 	}
 
 	function off(name, observer) {
-		var expando = this.__expando, observers, i, l;
+		var expando = this.__expando, observers, l;
 		if (expando && (observers = cache[expando])) {
 			if (!observer) {
 				delete observers[name];
-			} else if ((observers = observers[name])) {
-				for (i = 0, l = observers.length; i < l; i += 1) {
-					if (observers[i] === observer) {
-						observers.splice(i, 1);
+			} else if ((observers = observers[name]) && (l = observers.length)) {
+				while (l) {
+					if (observers[l -= 1] === observer) {
+						observers.splice(l, 1);
 						break;
 					}
 				}

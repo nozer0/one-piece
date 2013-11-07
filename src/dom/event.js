@@ -163,6 +163,8 @@ define(function (require, exports, module) {
 					try {
 						e[typeof node === 'string' ? 'type' : 'target'] = node;
 					} catch (ignore) {}
+				} else {
+					e = node;
 				}
 				e.target.dispatchEvent(e instanceof Event ? e : exports.createEvent(e));
 				return this;
@@ -312,11 +314,11 @@ define(function (require, exports, module) {
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
 				if (node['on' + name] === undefined) {
-					var expando = node.__expando, listeners, i, l;
-					if (expando && (listeners = customizeListeners[expando]) && (listeners = listeners[name])) {
-						for (i = 0, l = listeners.length; i < l; i += 1) {
-							if (listeners[i] === listener) {
-								listeners.splice(i, 1);
+					var expando = node.__expando, listeners, l;
+					if (expando && (listeners = customizeListeners[expando]) && (listeners = listeners[name]) && (l = listeners.length)) {
+						while (l) {
+							if (listeners[l -= 1] === listener) {
+								listeners.splice(l, 1);
 								break;
 							}
 						}

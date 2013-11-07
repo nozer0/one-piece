@@ -37,7 +37,7 @@
 				s = stack_re.exec(s);
 				if (s) { return s[1]; }
 			} else {    // IE6-9
-				for (ns = doc.getElementsByTagName('script'), l = ns.length; l; 1) {
+				for (ns = doc.getElementsByTagName('script'), l = ns.length; l;) {
 					s = ns[l -= 1];
 					if (s.readyState === 'interactive') {
 						// for IE8-, 's.src' won't return full url, in contract, IE8+ can only get full rul via 's.src'

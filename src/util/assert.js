@@ -56,13 +56,13 @@ define(function (require, exports, module) {
 	AssertionError.prototype.constructor = AssertionError;
 	AssertionError.prototype.toString = function () { return this.message; };
 	deep = function (actual, expected, matched, matched2) {
-		var t = typeof actual, i, l, p, o, o2;
+		var t = typeof actual, l, p, o, o2;
 		if (t !== 'object') { return actual === expected; }
 		if (typeof expected !== 'object') { return false; }
 		// avoid cycle references
-		for (i = 0, l = matched.length; i < l; i += 1) {
-			if (matched[i] === actual) {
-				return matched2[i] === expected;
+		for (l = matched.length; l;) {
+			if (matched[l -= 1] === actual) {
+				return matched2[l] === expected;
 			}
 		}
 		matched.push(actual);

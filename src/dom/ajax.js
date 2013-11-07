@@ -102,18 +102,17 @@ define(function (require, exports) {
 
 				if (v !== un) {
 					name = ctl.name;
-					t = data;
 					if (re.test(name)) {    // name like 'a[]'
 						name = name.substr(0, name.length - 2);
-						if (!t.hasOwnProperty(name)) {
-							t[name] = typeof v === 'string' ? [v] : v;
+						if (!data.hasOwnProperty(name)) {
+							data[name] = typeof v === 'string' ? [v] : v;
 						} else if (typeof v === 'string') {
-							t[name].push(v);
+							data[name].push(v);
 						} else {
-							t[name] = t[name].concat(v);
+							data[name] = data[name].concat(v);
 						}
 					} else {    // use the last item if without setting name like 'a[]'
-						t[name] = typeof v === 'string' ? v : v[v.length - 1];
+						data[name] = typeof v === 'string' ? v : v[v.length - 1];
 					}
 					//noinspection JSUnusedAssignment
 					v = un;
@@ -125,9 +124,9 @@ define(function (require, exports) {
 
 	if (!Array.prototype.hasOwnProperty('indexOf')) {
 		Array.prototype.indexOf = function (needle) {
-			var i = 0, l = this.length;
-			for (; i < l; i += 1) {
-				if (this[i] === needle) { return i; }
+			var l = this.length;
+			while (l) {
+				if (this[l -= 1] === needle) { return l; }
 			}
 			return -1;
 		};
