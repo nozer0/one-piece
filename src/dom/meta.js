@@ -9,7 +9,7 @@
 define(function (require, exports) {
 	'use strict';
 
-	var global = define.global, nav = global.navigator, ua = nav.userAgent, maps = {CriOS : 'Chrome', Version : 'Safari'}, t;
+	var global = define.global || window, nav = global.navigator, ua = nav.userAgent, maps = {CriOS : 'Chrome', Version : 'Safari'}, t;
 	if (nav.taintEnabled === undefined) {
 		t = ua.match(/it\/(\d+\.\d+).*\([^)]+\) (\w+)\/(\d+\.\d+)/);
 		if (t) {

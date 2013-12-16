@@ -54,6 +54,7 @@ define(function (require, exports) {
 	exports.resolve = function (uri, base, maps) {
 		var s = uri, i, l, t;
 		if (typeof base === 'Object') {
+			//noinspection JSUnresolvedVariable
 			maps = base.maps;
 			base = base.base;
 		}

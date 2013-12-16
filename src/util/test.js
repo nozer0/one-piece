@@ -11,12 +11,25 @@ define(function (require, exports) {
 	'use strict';
 
 	var g_console = define.global.console, console = define.modules.hasOwnProperty('util/console') ? require('util/console') : g_console || {log : 1, error : 1}, success = function (name, partial) {
-		console.info(name || '', ' passed');
 		if (!partial) {
-			this.passed += 1;
-			this.tested += 1;
-			if (this.tested === this.total) {
-				this.finish();
+			var l = this.retry, t = this.times;
+			if (l && (this.times = t ? t + 1 : 1) < l) {
+				try {
+					this[name]();
+				} catch (e) {
+					this.tested += 1;
+					if (g_console && console !== g_console && g_console.error) {
+						g_console.error(e);
+					}
+					console.error(name || '', 'failed --> ', e || '');
+				}
+			} else {
+				console.info(name || '', l ? ' passed (' + l + ' times)' : ' passed');
+				this.passed += 1;
+				this.tested += 1;
+				if (this.tested === this.total) {
+					this.finish();
+				}
 			}
 		}
 	}, fail = function (name, partial, e) {
@@ -47,7 +60,7 @@ define(function (require, exports) {
 	 * @param {Object}  cases   Includes the cases to be tested, which use 'test' as prefix of key name, required; for synchronize test case, throw Errors if failure; for the cases can't get result immediately, MUST return false to indicate it's an asynchronize test case, and call `success(case_name)` or `fail(case_name)` function of return object to notify the result later; also support `setUp` and `tearDown` functions like normal Unit Test.
 	 */
 	exports.run = function (cases) {
-		var p, t = cases.start = new Date(), ret, async;
+		var p, t = cases.start = new Date(), ret, async, i, l = cases.retry;
 		if (console.group) {
 			console.group('Start test ' + (cases.name || '') + ' (' + t.toLocaleTimeString() + '):');
 		} else {    // IE not support group
@@ -70,9 +83,12 @@ define(function (require, exports) {
 					if (ret === false) {
 						async = true;
 					} else {
+						for (i = 1; i < l; i += 1) {
+							ret = cases[p]();
+						}
 						cases.passed += 1;
 						cases.tested += 1;
-						console.info(p + ' passed');
+						console.info(p, ' passed', l ? ' passed (' + l + ' times)' : ' passed');
 					}
 				} catch (e) {
 					cases.tested += 1;

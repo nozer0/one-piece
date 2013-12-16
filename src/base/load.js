@@ -9,7 +9,7 @@
 define(function (require, exports) {
 	'use strict';
 
-	var global = define.global, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, extensions = exports.extensions = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType;
+	var global = define.global || window, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, extensions = exports.extensions = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType;
 
 	/**
 	 * Returns the type of file the passed url requests.
@@ -113,6 +113,7 @@ define(function (require, exports) {
 				if (node.onerror === undefined || global.opera) {   // opera won't trigger anything if 404
 					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
+						//noinspection JSUnresolvedVariable
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
 						node = null;
 					}, exports.timeout);
@@ -125,6 +126,7 @@ define(function (require, exports) {
 					}
 					node = null;
 					// 'sheet.cssRules' is accessible only if same host, and ff always returns 0 for 'cssRules.length'
+					//noinspection JSUnresolvedVariable
 					callback.call(ctx, uri, e.type === 'load' && (!t || this.sheet.cssRules.length), this, e);
 				};
 			};

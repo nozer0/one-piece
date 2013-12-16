@@ -10,7 +10,7 @@
 define(function (require, exports, module) {
 	'use strict';
 
-	var inspect = define.global.JSON ? function (o) {
+	var inspect = (define.global || window).JSON ? function (o) {
 		try {
 			return JSON.stringify(o);
 		} catch (ignore) {   // cyclic reference

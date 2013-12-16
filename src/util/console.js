@@ -9,7 +9,7 @@
 define(function (require, exports, module) {
 	'use strict';
 
-	var global = define.global, console = global.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
+	var global = define.global || window, console = global.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
 		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\r|\\n|\\r\\n/g, '<br>');
 	}, _join = Array.prototype.join;
 	exports = module.exports = {

@@ -2,11 +2,11 @@
 define(function (require, exports) {
 	'use strict';
 	exports.add = function () {
-		var sum = 0, i = 0, args = arguments, l = args.length;
+		var sum = 0, i = 0, l = arguments.length;
 		while (i < l) {
-			sum += args[i];
+			sum += arguments[i];
 			i += 1;
 		}
 		return sum;
-	}
+	};
 });

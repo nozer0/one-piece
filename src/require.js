@@ -9,8 +9,10 @@
 (function (ctx) {
 	'use strict';
 
+	//noinspection JSUnresolvedVariable
 	var global = ctx || window, doc = global.document, stack_re = /[@( ]([^@( ]+?)(?:\s*|:[^\/]*)$/, getCurrentScriptSrc = doc.currentScript === undefined ? function () {
 		try {
+			//noinspection JSUnresolvedFunction
 			this.__();
 		} catch (e) {
 			/*
@@ -31,6 +33,7 @@
 			 *
 			 * @see http://www.cnblogs.com/rubylouvre/archive/2013/01/23/2872618.html
 			 */
+			//noinspection JSUnresolvedVariable
 			var s = e.stack || e.stacktrace || (global.opera && e.message), ns, l, src;
 			if (s) {    // safari5- and IE6-9 not support
 				s = stack_re.exec(s);
@@ -50,6 +53,7 @@
 		}
 	} : function () { // ff 4+
 		// https://developer.mozilla.org/en-US/docs/DOM/document.currentScript
+		//noinspection JSUnresolvedVariable
 		var s = doc.currentScript;
 		return s ? s.src || s.baseURI : global.location && global.location.href;
 	}, define, require, uri_re;
@@ -433,6 +437,7 @@ define('util/uri', [], function (require, exports) {
 	exports.resolve = function (uri, base, maps) {
 		var s = uri, i, l, t;
 		if (typeof base === 'Object') {
+			//noinspection JSUnresolvedVariable
 			maps = base.maps;
 			base = base.base;
 		}
@@ -615,7 +620,7 @@ define('base/parser', [], function (require, exports) {
 define('base/load', [], function (require, exports) {
 	'use strict';
 
-	var global = define.global, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, extensions = exports.extensions = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType;
+	var global = define.global || window, doc = global.document, re = /\.(\w+)(?=[?#]\S*$|$)/, host_re = /^(?:https?:\/\/)?([^\/]+)/, loaders, extensions = exports.extensions = {'js' : 'js', 'css' : 'css', 'png' : 'img', 'jpg' : 'img', 'jpeg' : 'img', 'bmp' : 'img', 'tiff' : 'img', 'ico' : 'img'}, getType;
 
 	/**
 	 * Returns the type of file the passed url requests.
@@ -719,6 +724,7 @@ define('base/load', [], function (require, exports) {
 				if (node.onerror === undefined || global.opera) {   // opera won't trigger anything if 404
 					timer = global.setTimeout(function () {
 						node.onload = node.onerror/* = node.onabort*/ = null;
+						//noinspection JSUnresolvedVariable
 						callback.call(ctx, uri, t && node.sheet.cssRules.length, node);
 						node = null;
 					}, exports.timeout);
@@ -731,6 +737,7 @@ define('base/load', [], function (require, exports) {
 					}
 					node = null;
 					// 'sheet.cssRules' is accessible only if same host, and ff always returns 0 for 'cssRules.length'
+					//noinspection JSUnresolvedVariable
 					callback.call(ctx, uri, e.type === 'load' && (!t || this.sheet.cssRules.length), this, e);
 				};
 			};
@@ -885,7 +892,7 @@ define('base/load', [], function (require, exports) {
 define('util/console', [], function (require, exports, module) {
 	'use strict';
 
-	var global = define.global, console = global.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
+	var global = define.global || window, console = global.console, maps = {1 : 'log', 2 : 'info', 4 : 'warn', 8 : 'error'}, _level = 15, p, escape = function (s) {
 		return s.replace(/&/g, '&amp;').replace(/ /g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\r|\\n|\\r\\n/g, '<br>');
 	}, _join = Array.prototype.join;
 	exports = module.exports = {
@@ -976,7 +983,7 @@ define('util/console', [], function (require, exports, module) {
 
 (function () {
 	'use strict';
-	var compile = require('base/parser').compile, loader = define.loader = require('base/load'), load = loader.load, resolve = define.resolve = require('util/uri').resolve, global = define.global, doc = global.document, current_script, ns, l, m;
+	var compile = require('base/parser').compile, loader = define.loader = require('base/load'), load = loader.load, resolve = define.resolve = require('util/uri').resolve, global = define.global || window, doc = global.document, current_script, ns, l, m;
 
 	delete define.current_module;
 
@@ -1026,6 +1033,7 @@ define('util/console', [], function (require, exports, module) {
 		}
 	};
 
+	//noinspection JSUnresolvedVariable
 	current_script = doc.currentScript || doc.getElementById('$_');
 	if (!current_script) {
 		for (ns = doc.getElementsByTagName('script'), l = ns.length; l;) {

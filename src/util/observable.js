@@ -1,25 +1,26 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-09-15 09:19
+ * Modified : 2013-11-11 18:07
  * Name     : util/observable.js
  */
 
 /*global define */
 define(function (require, exports) {
 
-	var cache = {}, seed = 0, setProperty;
+	var cache = {}, events = [], seed = 0, timer, setProperty;
 
 	function on(name, observer) {
 		var expando, observers, p;
 		if (typeof name === 'object') {
 			for (p in name) {
-				if (name.hasOwnProperty(p)) {
-					on.call(this, p, name[p]);
+				if (name.hasOwnProperty(p) && (observer = name[p])) {
+					on.call(this, p, observer);
 				}
 			}
 			return this;
 		}
+		if (!observer) { return this; }
 		expando = this.__expando;
 		if (!expando) {
 			try {
@@ -55,16 +56,19 @@ define(function (require, exports) {
 		return this;
 	}
 
-	function observe(observers, e, ctx) {
-		setTimeout(function () {
-			for (var i = 0, l = observers.length; i < l; i += 1) {
+	function dispatch() {
+		var os = events, i = 0, l = os.length, o, observers, e, ctx, j, m;
+		// new event may be triggered when observer executed
+		for (events = []; i < l; i += 1) {
+			for (o = os[i], observers = o[0], e = o[1], ctx = o[2], j = 0, m = observers.length; j < m; j += 1) {
 				try {
-					if (observers[i].call(ctx, e) === false) { return false; }
+					if (observers[j].call(ctx, e) === false) { return false; }
 				} catch (ex) {
 					if (console && console.error) { console.error(ex); }
 				}
 			}
-		}, 0);
+		}
+		timer = events.length ? setTimeout(dispatch, 0) : null;
 	}
 
 	function trigger(name, e, blocking) {
@@ -81,7 +85,10 @@ define(function (require, exports) {
 		// if the set type is like 'xxx:yyy', notifies the observers of 'xxx' event too
 		i = name.indexOf(':');
 		if (i > 0) {
-			observers.push.apply(observers, objs[name.substr(0, i)]);
+			i = name.substr(0, i);
+			if (objs.hasOwnProperty(i)) {
+				observers.push.apply(observers, objs[i]);
+			}
 		}
 		l = observers.length;
 		if (l) {
@@ -105,7 +112,8 @@ define(function (require, exports) {
 					}
 				}
 			} else {
-				observe(observers, e, this);
+				events.push([observers, e, this]);
+				if (!timer) { timer = setTimeout(dispatch, 0); }
 			}
 		}
 		return this;
@@ -145,6 +153,7 @@ define(function (require, exports) {
 		if (!name || typeof name === 'boolean') {    // obj | obj, blocking
 			e = name;
 			name = obj;
+			//noinspection JSUnresolvedVariable
 			obj = name.target;
 		}
 		return trigger.call(obj, name, e, blocking);

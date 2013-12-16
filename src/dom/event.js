@@ -9,7 +9,8 @@
 define(function (require, exports, module) {
 	'use strict';
 
-	var global = define.global, isTrident = global.ActiveXObject !== undefined, isGecko = global.crypto !== undefined, isNewGecko = isGecko && global.crypto.alert === undefined, Event = global.Event, newEvent, doc = global.document, body = doc.body, html = doc.documentElement, stopPropagation, preventDefault, Events, EventMaps, KeyMaps, bubbles_re, cancelable_re, createEvent, customizeListeners, onpropertychange, seed = 0;
+	//noinspection JSUnresolvedVariable
+	var global = define.global || window, isTrident = global.ActiveXObject !== undefined, isGecko = global.crypto !== undefined, isNewGecko = isGecko && global.crypto.alert === undefined, Event = global.Event, newEvent, doc = global.document, body = doc.body, html = doc.documentElement, stopPropagation, preventDefault, Events, EventMaps, KeyMaps, bubbles_re, cancelable_re, createEvent, customizeListeners, onpropertychange, seed = 0;
 
 	if (doc.addEventListener) {
 		try {
@@ -66,9 +67,11 @@ define(function (require, exports, module) {
 				//noinspection IfStatementWithTooManyBranchesJS
 				if (Events.DragEvent.test(type)) {
 					event = doc.createEvent('DragEvent');
+					//noinspection JSUnresolvedFunction,JSUnresolvedVariable
 					event.initDragEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.button || 0, e.relatedTarget, e.dataTransfer);
 				} else if (Events.MouseWheelEvent && Events.MouseWheelEvent.test(type)) {  // IE9+
 					event = doc.createEvent('MouseWheelEvent');
+					//noinspection JSUnresolvedFunction
 					event.initMouseWheelEvent(type, bubbles, cancelable, view, detail, e.screenX || 0, e.screenY || 0, e.clientX || 0, e.clientY || 0, e.button || 0, e.relatedTarget, e.modifiers, e.wheelDelta);
 				} else if (Events.MouseEvent.test(type)) {
 					event = doc.createEvent('MouseEvent');
@@ -76,13 +79,15 @@ define(function (require, exports, module) {
 				} else if (Events.KeyboardEvent.test(type)) {
 					event = doc.createEvent('KeyboardEvent');
 					if (isGecko) {
+						//noinspection JSUnresolvedFunction
 						event.initKeyEvent(type, bubbles, cancelable, view, e.ctrlKey === true, e.altKey === true, e.shiftKey === true, e.metaKey === true, e.keyCode || (e.key && e.key.charCodeAt(0)) || 0, e.charCode || 0);
 					} else {
-						//noinspection JSCheckFunctionSignatures
+						//noinspection JSCheckFunctionSignatures,JSUnresolvedVariable
 						event.initKeyboardEvent(type, bubbles, cancelable, view, e.key, e.location, e.modifiers || [e.ctrlKey ? 'Control' : '', e.shiftKey ? 'Shift' : '', e.altKey ? 'Alt' : '', e.metaKey ? 'Meta' : '', e.altGraphKey ? 'AltGraph' : ''].join(' ').replace(/\s*/, ''), e.repeat, e.locale);
 					}
 				} else if (Events.FocusEvent && Events.FocusEvent.test(type)) {   //IE9+
 					event = doc.createEvent('FocusEvent');
+					//noinspection JSUnresolvedFunction
 					event.initFocusEvent(type, bubbles, cancelable, view, detail, e.relatedTarget);
 				} else if (Events.WheelEvent && Events.WheelEvent.test(type)) {    //webkit
 					event = doc.createEvent('WheelEvent');
@@ -95,6 +100,7 @@ define(function (require, exports, module) {
 					event.initMutationEvent(type, bubbles, cancelable, e.relatedNode, e.prevValue, e.newValue, e.attrName, e.attrChange);
 				} else if (Events.MessageEvent.test(type)) {
 					event = doc.createEvent('MessageEvent');
+					//noinspection JSUnresolvedFunction,JSUnresolvedVariable
 					event.initMessageEvent(type, bubbles, cancelable, e.data, e.origin || global.location.protocol + "//" + global.location.host, e.lastEventId || '1', e.source || global, e.ports);
 				}
 			} catch (ignore) {}
@@ -224,6 +230,7 @@ define(function (require, exports, module) {
 				if (p.nodeType !== 1) { // old Safari
 					obj.target = p.parentNode;
 				}
+				//noinspection JSUnresolvedVariable
 				p = e.relatedTarget;
 				if (p && p.nodeType !== 1) {
 					obj.relatedTarget = p.parentNode;
@@ -284,6 +291,7 @@ define(function (require, exports, module) {
 				}
 				// IE8- don't support customize event, use `onpropertychange` instead
 				if (node['on' + name] === undefined) {
+					//noinspection JSUnresolvedVariable
 					expando = node.__expando;
 					if (!expando) {
 						//noinspection JSUndefinedPropertyAssignment
@@ -314,6 +322,7 @@ define(function (require, exports, module) {
 			 */
 			removeEventListener : function (node, name, listener, useCapture) {
 				if (node['on' + name] === undefined) {
+					//noinspection JSUnresolvedVariable
 					var expando = node.__expando, listeners, l;
 					if (expando && (listeners = customizeListeners[expando]) && (listeners = listeners[name]) && (l = listeners.length)) {
 						while (l) {
@@ -367,6 +376,7 @@ define(function (require, exports, module) {
 			 */
 			getEvent : function (e) {
 				if (!e) { e = global.event; }
+				//noinspection JSUnresolvedVariable
 				if (e._origin) { return e; }
 				var obj = {}, p, re = /^[a-z]/;
 				//noinspection JSHint
@@ -377,7 +387,9 @@ define(function (require, exports, module) {
 						obj[p] = e[p];
 					}
 				}
+				//noinspection JSUnresolvedVariable
 				if (e.expandoType) {
+					//noinspection JSUnresolvedVariable
 					obj.type = e.expandoType;
 				}
 				obj._origin = e;
@@ -397,7 +409,6 @@ define(function (require, exports, module) {
 						break;
 					case 'keypress':    // see http://www.quirksmode.org/js/keys.html
 						obj.charCode = e.keyCode;
-						break;
 				}
 				if (e.clientX) {    // http://www.quirksmode.org/mobile/tableViewport_desktop.html
 					obj.pageX = e.clientX + body.scrollLeft + html.scrollLeft;

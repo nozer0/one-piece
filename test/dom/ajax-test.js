@@ -121,7 +121,7 @@ define(function (require) {
 					var p;
 					try {
 						for (p in res) {
-							if (res.hasOwnProperty(p) && res[p] === '' && !isNaN(p)) {
+							if (res.hasOwnProperty(p) && (res[p] === '' && !isNaN(p))) {
 								delete res[p];
 								break;
 							}
@@ -168,7 +168,7 @@ define(function (require) {
 					var p;
 					try {
 						for (p in res) {
-							if (res.hasOwnProperty(p) && res[p] === '' && !isNaN(p)) {
+							if (res.hasOwnProperty(p) && (res[p] === '' && !isNaN(p))) {
 								delete res[p];
 								break;
 							}

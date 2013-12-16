@@ -9,7 +9,7 @@
 define(function (require, exports) {
 	'use strict';
 
-	var global = define.global, FormData = global.FormData, FileReader = global.FileReader, Blob = global.Blob, doc = global.document, global_cfg = {}, uri_re = /^(?:(\w+:)\/\/)?([^:\/]+:?[\d]*)/, domain_re = /\w+\.[a-z]+:?\d*$/i, getXHR = global.XMLHttpRequest ? function () {
+	var global = define.global || window, FormData = global.FormData, FileReader = global.FileReader, Blob = global.Blob, doc = global.document, global_cfg = {}, uri_re = /^(?:(\w+:)\/\/)?([^:\/]+:?[\d]*)/, domain_re = /\w+\.[a-z]+:?\d*$/i, getXHR = global.XMLHttpRequest ? function () {
 		return new global.XMLHttpRequest();
 	} : function () {  // IE8-
 		try {
@@ -198,6 +198,7 @@ define(function (require, exports) {
 
 	function serializer4(name, value) {    // multipart/form-data after read file
 		var file = value.file;
+		//noinspection JSUnresolvedVariable
 		return 'Content-Disposition: form-data; name="' + name + '"; filename="' + (file.name || file.fileName) + '"\r\nContent-type: ' + file.type + ';\r\n\r\n' + value.content;
 	}
 
@@ -252,7 +253,9 @@ define(function (require, exports) {
 		var ifm, body, win, arr, i, l;
 		switch (type) {
 			case 'arraybuffer':
+				//noinspection JSUnresolvedVariable
 				if (xhr && xhr.responseBody) {  // IE7+
+					//noinspection JSUnresolvedVariable
 					res = xhr.responseBody;
 				} else if (global.Uint8Array) { // FF
 					for (i = 0, l = res.length, arr = new Uint8Array(l); i < l; i += 1) {
@@ -288,7 +291,6 @@ define(function (require, exports) {
 						eval('res=' + res);
 					} catch (ignored) {}
 				}
-				break;
 		}
 		return res;
 	}
@@ -301,7 +303,7 @@ define(function (require, exports) {
 	function onreadystatechange() {
 		if (this.readyState === 4) {
 			if (this.status >= 200 && this.status < 300) {
-				var res = this.response || this.hasOwnProperty('responseText') && this.responseText;
+				var res = this.response || 'responseText' in this && this.responseText; // on IE, `responseText` is not own property
 				this.cfg.onsuccess.call(this.cfg.context, typeof res === 'string' ? processResponse(res, this.cfg.responseType, this) : res);
 			} else {
 				this.cfg.onfail.call(this.cfg.context, this.status);
@@ -420,6 +422,7 @@ define(function (require, exports) {
 			}
 		}
 		url = cfg.url || (cfg.url = form.action);
+		//noinspection JSUnresolvedVariable
 		if (!cfg.cacheable) {
 			url += (url.indexOf('?') > 0 ? '&' : '?') + Date.now() + (cnt += 1);
 		}
@@ -446,8 +449,10 @@ define(function (require, exports) {
 
 			if (method === 'GET') {
 				t = form ? getFormData(form) : data;
+				//noinspection JSUnresolvedVariable
 				xhr.open(method, t ? url + (url.indexOf('?') > 0 ? '&' : '?') + serialize(t) : url, async, cfg.username, cfg.password);
 			} else {
+				//noinspection JSUnresolvedVariable
 				xhr.open(method, url, async, cfg.username, cfg.password);
 				if (form || data) {
 					if (enctype === 'multipart/form-data') {
@@ -470,6 +475,7 @@ define(function (require, exports) {
 				}
 			}
 			if (async) {    // Gecko 11+ throws exception if set for synchronous request
+				//noinspection JSUnresolvedVariable
 				if (cfg.hasOwnProperty('responseType') && (!global.opera || cfg.responseType !== 'document')) {
 					try {   // support by ff10+, op12+
 						xhr.responseType = cfg.responseType;
