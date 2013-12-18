@@ -54,10 +54,7 @@ footer {
 	left: 0;
 	right: 0;
 	padding: 20px;
-<<<<<<< HEAD
 	overflow: auto;
-=======
->>>>>>> fa5be9c00e860ecb3b2959fb54dbe88e1b6e9bbe
 }
 
 pre {
@@ -74,18 +71,8 @@ pre code {
 	color: #f8f8f2;
 }
 
-<<<<<<< HEAD
 pre.logo {
 	font: 400 16px/18px Monaco, \5b8b\4f53, sans-serif;
 	color: #87ceeb;
 	text-align: center;
-=======
-#wrapper {
-	height: 100%;
-	overflow: hidden;
-}
-
-#main {
-	overflow: auto;
->>>>>>> fa5be9c00e860ecb3b2959fb54dbe88e1b6e9bbe
 }
