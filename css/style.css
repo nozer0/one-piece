@@ -1,0 +1,80 @@
+/***** reset *****/
+html, body {
+	color: #000;
+	font: 400 14px/1.5 helvetica, arial, \5b8b\4f53, sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+code {
+	font: 400 12px/1.5 Monaco, \5b8b\4f53, sans-serif;
+}
+
+/***** global *****/
+html {
+	background: #555;
+	height: 100%;
+}
+
+body {
+	position: relative;
+	width: 72%;
+	min-width: 480px;
+	height: 100%;
+	min-height: 480px;
+	margin: auto;
+	background: #dedede;
+	color: #555;
+	box-shadow: 0 0 5px 5px #333;
+}
+
+a {
+	color: #069;
+	text-decoration: none;
+}
+
+header, footer {
+	height: 10px;
+	padding: 20px;
+	text-align: center;
+}
+
+footer {
+	position: absolute;
+	height: 10px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+#main {
+	position: absolute;
+	top: 120px;
+	bottom: 50px;
+	left: 0;
+	right: 0;
+	padding: 20px;
+}
+
+pre {
+	background: #3a3c42;
+	padding: 10px 0;
+	margin: 0 20px;
+}
+
+code {
+	color: #000;
+}
+
+pre code {
+	color: #f8f8f2;
+}
+
+#wrapper {
+	height: 100%;
+	overflow: hidden;
+}
+
+#main {
+	overflow: auto;
+}

@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<title>one-piece by nozer0</title>
+	<meta name="author" content="nozer0">
+	<base href="/pages/_site/">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="css/style.css">
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+</head>
+<body>
+<header>
+	<< ONE PIECE >>
+	<nav>
+		<a href="./">index</a>
+	</nav>
+</header>
+<aside>
+	<ul>
+		
+		<li><a href="./2013/12/18/how-to-use-git.html">how to use git</a></li>
+		
+		<li><a href="./2013/12/10/get-your-own-reset-css.html">get your own reset css</a></li>
+		
+	</ul>
+</aside>
+<div id="main">
+	<hr />
+<pre><code>   _____   __   _   _____        _____   _   _____   _____   _____
+  /  _  \ |  \ | | | ____|      |  _  \ | | | ____| /  ___| | ____|
+  | | | | |   \| | | |__        | |_| | | | | |__   | |     | |__
+  | | | | | |\   | |  __|       |  ___/ | | |  __|  | |     |  __|
+  | |_| | | | \  | | |___       | |     | | | |___  | |___  | |___
+  \_____/ |_|  \_| |_____|      |_|     |_| |_____| \_____| |_____|</code></pre>
+<hr />
+<h1 id='one_piece'>One Piece</h1>
+
+<p>Mass of separate web modules.<br />Collect pieces of small modules together to satisfy different requirements, and with module loader itself, so call it as &#8216;One Piece&#8217;, actually, its also my favorite animation name ^_^</p>
+
+<h2 id='module_loader'>Module Loader</h2>
+
+<h3 id='concepts'>Concepts</h3>
+
+<p>Module is a piece of codes which is offered privacy of their top scope, facility for importing singleton objects from other modules, and exporting their own APIs.<br />Please check <a href='http://wiki.commonjs.org/wiki/Modules/1.1.1'>commonJS</a> for details.</p>
+
+<p>And for web client, it uses a wrapper function <code>define</code> to implement the feature. Something like</p>
+
+<pre><code>	define(&#39;hello&#39;, [&#39;util/console&#39;], function(require, exports, module) {
+		var console = require(&#39;util/console&#39;);
+		exports.hello = function (name) { console.info(&#39;hello &#39; + name); };
+	});</code></pre>
+
+<h3 id='status'>Status</h3>
+
+<p>Based on the different situations, one module can have 6 status at different time.</p>
+
+<ol>
+<li>
+<p>Uninitialized</p>
+
+<p>This happens when some modules are first required by their parent module, created by the parent module with &#8216;uninitialized&#8217; status.</p>
+</li>
+
+<li>
+<p>Loading</p>
+
+<p>It&#8217;s easy to understand from naming, the module is under loading currently.</p>
+</li>
+
+<li>
+<p>Loaded &amp; Failed</p>
+
+<p>The module is loaded successfully or failed.</p>
+</li>
+
+<li>
+<p>Interactive</p>
+
+<p>All required children modules are ready, which means on the status of &#8216;interactive&#8217; or &#8216;complete&#8217;. But not be executed yet.</p>
+</li>
+
+<li>
+<p>Complete</p>
+
+<p>When a module tree is ready, it will run the codes from the root module first, and when first <code>require</code> function called, the definition of related module is executed, and set status to &#8216;complete&#8217;.</p>
+</li>
+</ol>
+
+<h3 id='cyclic'>Cyclic</h3>
+
+<p>About the module require cyclic situation, assume we have such javascript files.</p>
+
+<p>a.js</p>
+
+<pre><code>	define(function (require, exports) {
+		console.log(&#39;a starting&#39;);
+		exports.done = false;
+		var b = require(&#39;./b.js&#39;);
+		console.log(&#39;in a, b.done = %j&#39;, b.done);
+		exports.done = true;
+		console.log(&#39;a done&#39;);
+	});</code></pre>
+
+<p>b.js</p>
+
+<pre><code>	define(function (require, exports) {
+		console.log(&#39;b starting&#39;);
+		exports.done = false;
+		var a = require(&#39;./a.js&#39;);
+		console.log(&#39;in b, a.done = %j&#39;, a.done);
+		exports.done = true;
+		console.log(&#39;b done&#39;);
+	});</code></pre>
+
+<p>main.js</p>
+
+<pre><code>	define(function (require, exports) {
+		console.log(&#39;main starting&#39;);
+		var a = require(&#39;./a.js&#39;);
+		var b = require(&#39;./b.js&#39;);
+		console.log(&#39;in main, a.done=%j, b.done=%j&#39;, a.done, b.done);
+	});</code></pre>
+
+<p>We can get the output</p>
+
+<pre><code>	main starting
+	a starting
+	b starting
+	in b, a.done = false
+	b done
+	in a, b.done = true
+	a done
+	in main, a.done=true, b.done=true</code></pre>
+
+<p>The same result as <a href='http://nodejs.org/api/modules.html'>nodejs</a></p>
+
+<h3 id='usage'>Usage</h3>
+
+<p>You can simple add a script like.</p>
+
+<pre><code>	&lt;script id=&quot;$_&quot; src=&quot;path/to/require.js&quot; data-config=&quot;./config&quot; data-main=&quot;./main&quot;&gt;&lt;/script&gt;</code></pre>
+
+<p>Or combine normal scripts and &#8216;data-&#8217; attributes feature.</p>
+
+<pre><code>	&lt;script id=&quot;$_&quot; src=&quot;path/to/require.js&quot; data-config=&quot;./config&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;./main.js&quot; defer&gt;&lt;/script&gt;</code></pre>
+
+<p>Even, although it&#8217;s highly not encouraged.</p>
+
+<pre><code>	&lt;script id=&quot;$_&quot; src=&quot;path/to/require.js&quot; data-main=&quot;./main&quot;&gt;&lt;/script&gt;
+	&lt;script src=&quot;./config.js&quot;&gt;&lt;/script&gt;</code></pre>
+</div>
+<footer>
+	copyright <a href="mailto:c.nozer0@gmail.com">@nozer0</a> 2013
+</footer>
+</body>
+</html>
