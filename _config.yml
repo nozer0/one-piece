@@ -1,0 +1,3 @@
+source: .
+exclude: ['.git','Gemfile*']
+baseurl: /one-piece/
