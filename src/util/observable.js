@@ -71,6 +71,12 @@ define(function (require, exports) {
 		timer = events.length ? setTimeout(dispatch, 0) : null;
 	}
 
+	function flush() {
+		while (events.length) {
+			dispatch();
+		}
+	}
+
 	function trigger(name, e, blocking) {
 		var expando, objs, observers, i, l;
 		if (!(expando = this.__expando) || !(objs = cache[expando])) {
@@ -160,6 +166,11 @@ define(function (require, exports) {
 	};
 
 	/**
+	 * Dispatches all cached events.
+	 */
+	exports.flush = flush;
+
+	/**
 	 * Adds the `on`, `off` and `trigger` methods to the set `obj`, makes it observable.
 	 *
 	 * @param {Object}  obj     The object to be observed, required.
@@ -168,6 +179,7 @@ define(function (require, exports) {
 		obj.on = on;
 		obj.off = off;
 		obj.trigger = trigger;
+		obj.flush = flush;
 		return obj;
 	};
 

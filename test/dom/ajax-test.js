@@ -2,7 +2,7 @@
 define(function (require) {
 	var assert = require('util/assert'), ajax = require('dom/ajax'), Blob = define.global.Blob, test = require('util/test').run({
 		name               : 'ajax',
-		setUp              : function () {
+		setUpCase          : function () {
 			this.fail_callback = function (status) {
 				test.fail(this.name, null, status);
 			};
@@ -159,12 +159,12 @@ define(function (require) {
 			var doc = define.global.document, form = doc.createElement('form');
 			form.innerHTML = 'hidden:<input name="hidden" type="hidden" value="hidden"> disabled:<input name="disabled" disabled value="disabled"> unnamed:<input value="unnamed"> type:<input name="type" value="json"> <textarea name="s">啊</textarea> ' + 'chk[]:<input name="chk[]" type="checkbox" value="a" checked> <input name="chk[]" type="checkbox" value="b" checked> <input name="chk[]" type="checkbox" value="c"> radio:<input name="radio[]" type="radio" value="a"> <input name="radio[]" type="radio" value="b" checked> ' + 'overwrite: <input name="overwrite" value="overwrite"> <input name="overwrite" value="overwritten"> ' + '<select name="sel"><option value="Red" selected>红</option><option selected>绿</option></select> <select name="sel2[]" multiple><option value="Red" selected>红</option><option selected>绿</option></select>' + '<input name="submit" type="submit" value="submit"> <button name="reset">reset</button> ';
 			ajax.ajax({
-				url       : './ajax-test.php',
-				name      : 'testForm',
-				method    : 'post',
-				form      : form,
-				responseType  : 'json',
-				onsuccess : function (res) {
+				url          : './ajax-test.php',
+				name         : 'testForm',
+				method       : 'post',
+				form         : form,
+				responseType : 'json',
+				onsuccess    : function (res) {
 					var p;
 					try {
 						for (p in res) {
@@ -179,7 +179,7 @@ define(function (require) {
 						test.fail(this.name, null, ex);
 					}
 				},
-				onfail    : this.fail_callback
+				onfail       : this.fail_callback
 			});
 			return false;
 		},

@@ -2,7 +2,8 @@
 define(function (require) {
 	//noinspection JSUnresolvedVariable
 	var global = define.global || window, assert = require('util/assert'), mixin = require('util').mixin, Model = require('component/offline-model').Model, AjaxStore = require('component/store/ajax').Store, DBStore = require(global.openDatabase ? 'component/store/sqlDB' : global.indexedDB || global.mozIndexedDB || global.webkitIndexedDB || global.msIndexedDB ? 'component/store/indexedDB' : 'util/uri').Store, test = require('util/test').run({
-		setUp       : function () {
+		repeat      : 1,
+		setUpCase   : function () {
 			this.fields = {
 				id      : 'int',
 				name    : 'string',

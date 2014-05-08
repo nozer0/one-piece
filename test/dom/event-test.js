@@ -4,7 +4,7 @@ define(function (require) {
 	var assert = require('util/assert'), AssertionError = assert.AssertionError, events = require('dom/event'), outer, inner, chkbox, input,
 		test = require('util/test').run({
 			name               : 'event',
-			setUp              : function () {
+			setUpCase          : function () {
 				var doc = document, body = doc.getElementsByTagName('body')[0];
 				outer = doc.createElement('div');
 //				outer.style.border = '1px solid #000';

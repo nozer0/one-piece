@@ -4,7 +4,7 @@ define(function (require) {
 	var global = define.global || window, assert = require('util/assert'), CacheStore = require('component/store/cache').Store, IndexedDBStore = require(global.indexedDB || global.mozIndexedDB || global.webkitIndexedDB || global.msIndexedDB ? 'component/store/indexedDB' : 'util/uri').Store, SqlDBStore = require(global.openDatabase ? 'component/store/sqlDB' : 'util/uri').Store, AjaxStore = require('component/store/ajax').Store,
 		test = require('util/test').run({
 			name          : 'store',
-			setUp         : function () {
+			setUpCase     : function () {
 				this.fields = {
 					id      : 'int',
 					name    : 'string',
@@ -24,18 +24,19 @@ define(function (require) {
 					{name : '优菜', age : 18, country : 'Japan'},
 					{name : '葵', age : 19, country : 'Japan'}
 				];
-				this.stores = [];
 			},
 			tearDown      : function () {
-				for (var stores = this.stores, i = 0, l = stores.length; i < l; i += 1) {
+				var store = this.store;
+				if (store) {
 					try {
-						stores[i].destroy();
+						store.destroy();
 					} catch (ignore) {}
+					delete this.store;
 				}
 			},
 			_testSync     : function (store) {
 				var data = this.data, i = 0, l = data.length - 1, ret;
-				this.stores.push(store.init());
+				this.store = store.init();
 				// save
 				while (i <= l) {
 					assert.strictEqual(store.save(data[i]).id, i += 1, 'create');
@@ -90,24 +91,30 @@ define(function (require) {
 				ret = store.list();
 				assert.strictEqual(ret.length, 2);
 				assert.strictEqual(ret[0].name, '优菜', 'remove all');
+
+				store.destroy();
+				delete this.store;
 			},
 			_testAsync    : function (store, name) {
 				var data = this.data, error;
-				this.stores.push(store);
 				store.on('error', function (e) {
-					test.fail(name, null, store.constructor.ERRORS[e.code] || String(e));
+					error = true;
+					store.destroy();
+					test.fail(name, null, store.constructor.ERRORS[e.code] || e.message || String(e));
 				});
 				store.on('save:create', function (e) {
 					var d = e.data, id = e.id;
 					if (id < 0 || id > 9) {
 						error = true;
-						test.fail(name + ':save', false, {actual : id});
+						store.destroy();
+						test.fail(name + ':save', false, new assert.AssertionError({actual : id}));
 					}
 					try {
 						assert.strictEqual(d.name, data[id - 1].name);
 						store.save(id === 9 ? {id : 2, sex : 'female'} : data[id]);
 					} catch (ex) {
 						error = true;
+						store.destroy();
 						test.fail(name + ':save', false, ex);
 					}
 				});
@@ -138,6 +145,7 @@ define(function (require) {
 							assert.strictEqual(d.sex, 'female');
 						} catch (ex) {
 							error = true;
+							store.destroy();
 							test.fail(name + ':update', false, ex);
 						}
 					} else if (id === 5) {
@@ -146,6 +154,7 @@ define(function (require) {
 							assert.strictEqual(d.age, data[4].age);
 						} catch (ex) {
 							error = true;
+							store.destroy();
 							test.fail(name + ':find', false, ex);
 						}
 					} else if (id === 7) {
@@ -153,6 +162,7 @@ define(function (require) {
 							assert.equal(d);
 						} catch (ex) {
 							error = true;
+							store.destroy();
 							test.fail(name + ':remove', false, ex);
 						}
 
@@ -171,6 +181,7 @@ define(function (require) {
 								assert.strictEqual(ret[3].name, '葵');
 							} catch (ex) {
 								error = true;
+								store.destroy();
 								test.fail(name + ':list', false, ex);
 							}
 						} else if (e.conditions.level) {
@@ -178,6 +189,7 @@ define(function (require) {
 								assert.strictEqual(ret.length, 3);
 							} catch (ex) {
 								error = true;
+								store.destroy();
 								test.fail(name + ':updateAll', false, ex);
 							}
 
@@ -190,6 +202,7 @@ define(function (require) {
 								assert.strictEqual(ret[3].level, 5, 'updateAll expr');
 							} catch (ex) {
 								error = true;
+								store.destroy();
 								test.fail(name + ':updateAll expr', false, ex);
 							}
 
@@ -206,10 +219,11 @@ define(function (require) {
 						try {
 							assert.strictEqual(ret.length, 2);
 							assert.strictEqual(ret[0].name, '优菜');
-							if (!error) { test.success(name); }
 						} catch (ex) {
+							error = true;
 							test.fail(name + ':remove all', false, ex);
 						}
+						store.destroy();
 					}
 				});
 				store.on('updateAll', function (e) {
@@ -217,6 +231,8 @@ define(function (require) {
 						try {
 							assert.strictEqual(e.count, 3);
 						} catch (ex) {
+							error = true;
+							store.destroy();
 							test.fail(name + ':updateAll', false, ex);
 						}
 						store.list({level : 1});
@@ -224,6 +240,8 @@ define(function (require) {
 						try {
 							assert.strictEqual(e.count, 4);
 						} catch (ex) {
+							error = true;
+							store.destroy();
 							test.fail(name + ':updateAll expr', false, ex);
 						}
 						store.list({'country' : ['China', 'Japan']});
@@ -239,35 +257,40 @@ define(function (require) {
 				store.on('initialized', function () {
 					store.save(data[0]);
 				});
+				store.on('destroyed', function () {
+					if (!error) {
+						setTimeout(function () { test.success(name); }, 0);
+					}
+				});
 				store.init();
-				return false;
 			},
 			testCache     : function () {
 				this._testSync(new CacheStore({fields : this.fields}));
 			},
 			testIndexedDB : IndexedDBStore && function () {
-				return this._testAsync(new IndexedDBStore({name : 'people', fields : this.fields}), 'testIndexedDB');
+				this._testAsync(new IndexedDBStore({name : 'people', fields : this.fields}), 'testIndexedDB');
+				return false;
 			},
 			testSqlDB     : SqlDBStore && function () {
-				return this._testAsync(new SqlDBStore({name : 'people', fields : this.fields}), 'testSqlDB');
+				this._testAsync(new SqlDBStore({name : 'people', fields : this.fields}), 'testSqlDB');
+				return false;
 			},
 			testSyncAjax  : function () {
-				var store = new AjaxStore({
+				this._testSync(new AjaxStore({
 					name   : 'people',
 					fields : this.fields,
 					async  : false,
 					host   : 'store-test.php'
-				});
-				this._testSync(store);
-				store.destroy();
-				this.stores.pop();
+				}));
+				// store.flush();
 			},
 			testAsyncAjax : function () {
-				return this._testAsync(new AjaxStore({
+				this._testAsync(new AjaxStore({
 					name   : 'people',
 					fields : this.fields,
 					host   : 'store-test.php'
 				}), 'testAsyncAjax');
+				return false;
 			}
 		});
 });

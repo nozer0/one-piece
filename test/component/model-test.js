@@ -4,7 +4,8 @@ define(function (require) {
 	var assert = require('util/assert'), Model = require('component/model').Model, CacheStore = require('component/store/cache').Store, AjaxStore = require('component/store/ajax').Store,
 		test = require('util/test').run({
 			name                : 'model',
-			setUp               : function () {
+			repeat              : 1,
+			setUpCase           : function () {
 				this.fields = {
 					id      : 'int',
 					name    : 'string',
@@ -26,7 +27,7 @@ define(function (require) {
 				];
 				this.models = [];
 			},
-			tearDown            : function () {
+			tearDownCase        : function () {
 				for (var models = this.models, i = 0, l = models.length; i < l; i += 1) {
 					try {
 						models[i].destroy();

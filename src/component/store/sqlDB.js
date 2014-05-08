@@ -1,7 +1,7 @@
 /**
  * Author   : nozer0
  * Email    : c.nozer0@gmail.com
- * Modified : 2013-10-14 06:35
+ * Modified : 2014-05-08 00:05
  * Name     : component/store/sqlDB.js
  */
 
@@ -76,7 +76,7 @@ define(function (require, exports) {
 			db = this.db = openDatabase(this.db_name || (this.db_name = location.host), +this.db_version || (this.db_version = '1.0'), this.db_description || (this.db_description = 'generated on ' + new Date()), +this.db_size || (this.db_size = 2097152));
 			s = [];
 			self = this;
-			onError = this.onError = function (tx, err) { self.trigger('error', err, true); };
+			onError = this.onError = function (tx, err) { self.trigger('error', tx && tx.code ? tx : err, true); };
 			for (p in fields) {
 				if (fields.hasOwnProperty(p) && p !== 'id') {
 					t = fields[p];
